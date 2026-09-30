@@ -1,0 +1,392 @@
+{
+ "at": "2026-09-30T03:01:27.409Z",
+ "amountUsd": 0.3,
+ "walletUsd": 1.32,
+ "vaults": [
+  {
+   "vault": "0x8e357432cc12ff425c36432f312968aeb16112af",
+   "name": "Galaxy USDC",
+   "apy": 0.005838876736776347,
+   "totalAssets": 84807673.725151,
+   "withdrawableNow": 0.05,
+   "withdrawableNowPct": 0,
+   "earnKitWarnings": [
+    "low_liquidity:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: low_liquidity:YELLOW",
+    "on chain only 0% of deposits can be withdrawn now (need 20%)",
+    "on chain 0.05 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x5befab92a5a3d60f578cb51eeb4e4fd50a1e3123",
+   "name": "Keyrock Prime USDC",
+   "apy": 0.005838375435343078,
+   "totalAssets": 75008476.263344,
+   "withdrawableNow": 1.133316,
+   "withdrawableNowPct": 0,
+   "earnKitWarnings": [
+    "low_liquidity:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: low_liquidity:YELLOW",
+    "on chain only 0% of deposits can be withdrawn now (need 20%)",
+    "on chain 1.13 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x7610094b846657dcf166d59e42973db52c7015f9",
+   "name": "Bitwise Premium RWA USDC",
+   "apy": 0.03991474248890233,
+   "totalAssets": 146973.463508,
+   "withdrawableNow": 25589.009387,
+   "withdrawableNowPct": 17.4106,
+   "earnKitWarnings": [],
+   "guard": "REFUSES",
+   "refusals": [
+    "on chain only 17.4106% of deposits can be withdrawn now (need 20%)"
+   ]
+  },
+  {
+   "vault": "0xdeccd53be5453215821184824b519e04c7e00bc7",
+   "name": "Gauntlet USDC Prime",
+   "apy": 0.005782696275036662,
+   "totalAssets": 95512.941243,
+   "withdrawableNow": 792.885822,
+   "withdrawableNowPct": 0.8301,
+   "earnKitWarnings": [],
+   "guard": "REFUSES",
+   "refusals": [
+    "on chain only 0.8301% of deposits can be withdrawn now (need 20%)"
+   ]
+  },
+  {
+   "vault": "0xbeef0016cb2fd5c352ea7ca08a9f54739dfa7298",
+   "name": "Steakhouse Prime USDC",
+   "apy": 0.000019399604762100565,
+   "totalAssets": 88908.890529,
+   "withdrawableNow": 88613.85227,
+   "withdrawableNowPct": 99.6682,
+   "earnKitWarnings": [],
+   "guard": "ALLOWS (economics decided at quote time)",
+   "refusals": []
+  },
+  {
+   "vault": "0xbeef0007d5a04246f5382957035df34f7e82102e",
+   "name": "Steakhouse Prime USDC",
+   "apy": 0.004416990630758108,
+   "totalAssets": 14928.543269,
+   "withdrawableNow": 0.00096,
+   "withdrawableNowPct": 0,
+   "earnKitWarnings": [
+    "low_liquidity:YELLOW",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: low_liquidity:YELLOW, not_whitelisted:YELLOW",
+    "on chain only 0% of deposits can be withdrawn now (need 20%)",
+    "on chain 0.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x6bdfe1165d5165808d02de05969c9a19e9b7cf30",
+   "name": "Dialectic RWA USDC",
+   "apy": 0.008626265003453365,
+   "totalAssets": 14.45096,
+   "withdrawableNow": 1.133316,
+   "withdrawableNowPct": 7.8425,
+   "earnKitWarnings": [],
+   "guard": "REFUSES",
+   "refusals": [
+    "on chain only 7.8425% of deposits can be withdrawn now (need 20%)",
+    "on chain 1.13 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x9503d4eccee1046610ec1467f58b6bc23fce157e",
+   "name": "Pangolins USDC",
+   "apy": 0.0014964722199781587,
+   "totalAssets": 12.411625,
+   "withdrawableNow": 8.200534999999999,
+   "withdrawableNowPct": 66.0714,
+   "earnKitWarnings": [],
+   "guard": "ALLOWS (economics decided at quote time)",
+   "refusals": []
+  },
+  {
+   "vault": "0x10af7238c6355aa8ddb5ed60e2e9b55a72827b51",
+   "name": "Gauntlet USDC Balanced",
+   "apy": 0.005835319944323098,
+   "totalAssets": 11.023451,
+   "withdrawableNow": 1.314154,
+   "withdrawableNowPct": 11.9214,
+   "earnKitWarnings": [],
+   "guard": "REFUSES",
+   "refusals": [
+    "on chain only 11.9214% of deposits can be withdrawn now (need 20%)",
+    "on chain 1.31 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0xd392d1dee50a37cf3303aad0acbbc066a8462ec5",
+   "name": "Gauntlet USDC Prime",
+   "apy": 0.004912712134580184,
+   "totalAssets": 2.669191,
+   "withdrawableNow": 0,
+   "withdrawableNowPct": 0,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain only 0% of deposits can be withdrawn now (need 20%)",
+    "on chain 0.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x6ba7427fc9ee6df140250bd2fcdd4f8521235aa1",
+   "name": "USDC Test Vault",
+   "apy": 0,
+   "totalAssets": 2.409998,
+   "withdrawableNow": 2.409998,
+   "withdrawableNowPct": 100,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain 2.41 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x260e8a443470909b41ff023f5a6498acbfe61bda",
+   "name": "SteakUSDC",
+   "apy": -0.009931355451633992,
+   "totalAssets": 1.55,
+   "withdrawableNow": 0,
+   "withdrawableNowPct": 0,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain only 0% of deposits can be withdrawn now (need 20%)",
+    "on chain 0.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0xbd69ce1b1027e932158aa96a873a91c41cb729f9",
+   "name": "Flowmark USDC Turbo",
+   "apy": 0.0010925431833667813,
+   "totalAssets": 1.230799,
+   "withdrawableNow": 1.230799,
+   "withdrawableNowPct": 100,
+   "earnKitWarnings": [],
+   "guard": "REFUSES",
+   "refusals": [
+    "on chain 1.23 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0xa8fd51b78370c7ca948566d7ba97d252bc325124",
+   "name": "Steakhouse Prime USDC",
+   "apy": 0.000016486920845607893,
+   "totalAssets": 1.000001,
+   "withdrawableNow": 0,
+   "withdrawableNowPct": 0,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain only 0% of deposits can be withdrawn now (need 20%)",
+    "on chain 0.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x0083a444c5fbbb9ef9173ead8f8ae62367cbd2b1",
+   "name": "Test",
+   "apy": 0,
+   "totalAssets": 1,
+   "withdrawableNow": 1,
+   "withdrawableNowPct": 100,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain 1.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x048f2b75d6c6c759f9695518c165c9e242d7e62b",
+   "name": "Test 3",
+   "apy": 0,
+   "totalAssets": 1,
+   "withdrawableNow": 1,
+   "withdrawableNowPct": 100,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain 1.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x3d1d042f334b6f8326c29721ecdd1882659e93b1",
+   "name": "Steakhouse Prime USDC",
+   "apy": 0,
+   "totalAssets": 1,
+   "withdrawableNow": 1,
+   "withdrawableNowPct": 100,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain 1.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x53a64723b4a14e1331564915db5fe3ec53219ab1",
+   "name": "Arc Test 2",
+   "apy": 0,
+   "totalAssets": 1,
+   "withdrawableNow": 1,
+   "withdrawableNowPct": 100,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain 1.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x6bef447913f735c9cd6354bf50d13a9b9c718b80",
+   "name": "rwa USDC",
+   "apy": 0,
+   "totalAssets": 1,
+   "withdrawableNow": 1,
+   "withdrawableNowPct": 100,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain 1.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x744bf0312c971299505146f1558fa32a75957a99",
+   "name": "pjvk",
+   "apy": 0,
+   "totalAssets": 1,
+   "withdrawableNow": 1.00018,
+   "withdrawableNowPct": 100.018,
+   "earnKitWarnings": [
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: not_whitelisted:YELLOW",
+    "on chain 1.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x99cb5d63118db22a78c5aee8f368a4f635523a7d",
+   "name": "Pangolins USDC Prime",
+   "apy": 0,
+   "totalAssets": 1,
+   "withdrawableNow": 0.00096,
+   "withdrawableNowPct": 0.096,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "low_liquidity:YELLOW",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, low_liquidity:YELLOW, not_whitelisted:YELLOW",
+    "on chain only 0.096% of deposits can be withdrawn now (need 20%)",
+    "on chain 0.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0xabb75dcdac72ff9a4a3603119b1e6d060f212eca",
+   "name": "Aerie x Plume USDC Core",
+   "apy": 0.03292958373362049,
+   "totalAssets": 0.99017,
+   "withdrawableNow": 0.1,
+   "withdrawableNowPct": 10.0993,
+   "earnKitWarnings": [
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: not_whitelisted:YELLOW",
+    "on chain only 10.0993% of deposits can be withdrawn now (need 20%)",
+    "on chain 0.10 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0x17862f694841c7f26da56ef054b39f39a7664de3",
+   "name": null,
+   "apy": 0,
+   "totalAssets": 0,
+   "withdrawableNow": 0,
+   "withdrawableNowPct": null,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain only null% of deposits can be withdrawn now (need 20%)",
+    "on chain 0.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  },
+  {
+   "vault": "0xb6fcf5bb0f5b73fd9c727fe7cee1590953e254f1",
+   "name": null,
+   "apy": 0,
+   "totalAssets": 0,
+   "withdrawableNow": 0,
+   "withdrawableNowPct": null,
+   "earnKitWarnings": [
+    "timelock:RED",
+    "not_whitelisted:YELLOW"
+   ],
+   "guard": "REFUSES",
+   "refusals": [
+    "Earn Kit warns: timelock:RED, not_whitelisted:YELLOW",
+    "on chain only null% of deposits can be withdrawn now (need 20%)",
+    "on chain 0.00 USDC withdrawable now, need 10x our 0.30"
+   ]
+  }
+ ]
+}

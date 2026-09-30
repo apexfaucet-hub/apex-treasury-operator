@@ -1,0 +1,15 @@
+{
+  "name": "apex-treasury-operator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The control layer of an AI-operated business on Arc: accounting, limits, send gate, Circle Earn Kit guard.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node tests/vault-guard.test.js"
+  },
+  "dependencies": {
+    "@circle-fin/adapter-viem-v2": "1.18.0",
+    "@circle-fin/earn-kit": "1.8.0",
+    "viem": "2.57.1"
+  }
+}
