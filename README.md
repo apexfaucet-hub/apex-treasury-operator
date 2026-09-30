@@ -13,6 +13,7 @@ APEX Faucet is a live business on Arc and X1: a free USDC faucet for people, and
 - **Holds and moves funds:**
   - its Arc trader pays half of every winning close into the faucet (in batches, since 24 Sep);
   - it bridges with CCTP and prices its own products;
+  - it buys services from other Arc agents, paid out of last week's revenue, and rates them on chain with a public receipt (`operator/buy-and-rate.js`);
   - it tests yield with small, capped amounts: UBI on Arc bought for 19.50 USDC, held for that token's daily USDC payouts (first payout still pending).
 - **Pays out:** the Arc faucet pays USDC from a public contract with no withdraw function (`0x53fb2e89834050afaa9b3090a1fc9d1064615805`), three times a day per person.
 - **Keeps books it cannot fake:**
@@ -51,6 +52,9 @@ The limits are in [`limits/LIMITS.md`](limits/LIMITS.md). The code that enforces
 | `operator/data-pass.js` | The $5 card pass: the key is derived and never stored; one payment is one pass; refunds and disputes revoke it; a call we fail to answer is not charged. |
 | `operator/prices.js` | One price list for every payment rail and every public surface. |
 | `operator/vault-guard.js`, `operator/park-float.js`, `operator/vault-check.js`, `tools/vault-board.js` | Idle float with Circle Earn Kit. On-chain payout check (idle funds plus the vault's own withdraw market), a send gate that decodes every transaction, an exit rule, and a board of every Arc USDC vault. **On 30 Sep no vault passed every rule** (`data/vault-board-2026-09-30.json`): 22 failed the liquidity checks or carry Circle's own warnings; 2 passed the on-chain checks, but earn less than their gas at any size within our 5 USDC cap. |
+| `operator/buy-and-rate.js` | The purchase workflow (RFB 04: revenue in, pay for a service, record it). It spends at most last week's outside revenue. It buys one real x402 call from another Arc agent, proves the settlement of its own authorization on chain, grades delivery (not taste), and writes an ERC-8004 rating with a public receipt.
+
+First live run, 30 Sep: Argos Bot (#304) was paid 0.007 USDC, delivered, and rated 100. Three agents rejected a valid Arc USDC signature (`invalid_exact_evm_signature`); nothing settled, so nothing was rated. Reviewed by Fable: 7 must-fixes, all in. |
 | `tests/vault-guard.test.js` | 45 checks: planted forbidden transactions (wrong receiver, stranger as beneficiary, permits, unlimited approvals, fees, exotic transaction types, non-read RPC methods, off-chain signing) must be refused, the legitimate shapes must pass, and three real vaults must be refused. Needs the network. |
 | `checks/bundle-check.js` | The method behind one of our paid checks, published deliberately: was this Arc launch bundled? It reads the launch transaction, the first two minutes of buys, and where each early buyer's USDC came from. It needs our Arc pool index and exit probe (not included) to run. |
 
