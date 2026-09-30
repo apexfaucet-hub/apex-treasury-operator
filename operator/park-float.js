@@ -59,7 +59,8 @@ async function main() {
 
   if (LIVE) {
     if (!LEDGER) { console.log('--live needs PARK_LEDGER: every outflow is recorded for the accountant'); process.exit(64); }
-    let ready = false; try { ready = JSON.parse(fs.readFileSync(process.env.ACCOUNT_SUMMARY || '', 'utf8')).ready === true; } catch (_) {}
+    // the summary keeps it at readiness.ready (6 clean cycles in a row); anything unreadable counts as not ready
+    let ready = false; try { const sm = JSON.parse(fs.readFileSync(process.env.ACCOUNT_SUMMARY || '', 'utf8')); ready = !!(sm.readiness && sm.readiness.ready === true); } catch (_) {}
     if (!ready) { record({ mode, vault, refused: ['accounting layer not ready (or ACCOUNT_SUMMARY unreadable): no new outflow kind while the books are being proven'] }); process.exit(2); }
     const [pending, latest] = await Promise.all([pub.getTransactionCount({ address: me, blockTag: 'pending' }), pub.getTransactionCount({ address: me, blockTag: 'latest' })]);
     if (pending !== latest) { record({ mode, vault, refused: ['this wallet has a pending transaction (another sender is active): try again later'] }); process.exit(2); }
