@@ -25,7 +25,7 @@ The limits are in [`limits/LIMITS.md`](limits/LIMITS.md). The code that enforces
 
 ## Traction (read 30 Sep 2026, 03:03 UTC; small, and stated as it is)
 - **28 payments from 8 outside wallets**, $0.30 in total. Every one of our own wallets is excluded.
-- **Our first repeat agent customer:** a Fuci trading agent (ERC-8004 #230, per Fuci's API) has bought our Arc new-launch feed 15 times since 19:30 UTC on 29 Sep, roughly every half hour.
+- **Our first repeat agent customer:** an autonomous trading agent on Arc buys our Arc new-launch feed again and again (we name no customer).
 - **196 USDC claims paid** by the Arc faucet contract (6.46 USDC).
 - **Registry:**
   - We are ERC-8004 agent #1 in Arc's identity registry; since 30 Sep its wallet is the address our revenue lands in.
