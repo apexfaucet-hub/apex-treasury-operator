@@ -34,7 +34,8 @@ const X = require('/root/apex-faucet/lib/account/recon.js');
 const evm = require('/root/apex-faucet/lib/account/chains/evm.js');
 const C = require('/root/apex-faucet/lib/account/classify.js');
 const P = require('/root/apex-faucet/lib/account/prices.js');
-const METHOD_VERSION = 2;   // 2 (09-29, Fable review v2): classify.js rules, valued-only alarms, venue-backed trades
+const METHOD_VERSION = 3;   // 3 (09-30, Fable recorder review L5): case-sensitive isChainRef retraction, clean re-runs close delta:/drop: alerts
+const _mv2note = 2;   // 2 (09-29, Fable review v2): classify.js rules, valued-only alarms, venue-backed trades
 
 const arg = (k) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : null; };
 const OUT_DIR = process.env.ACCOUNT_RECON_OUT || R.DIR;
@@ -79,6 +80,17 @@ const ownerCache = new Map();
   const byId = new Map(reg.entries.map((e) => [e.id, e]));
   const ours = (chain, addr) => !!addr && R.isInternal(chain, addr);
   const db = open(); await db.init();
+  // HORIZON GUARD (2026-10-06, post-mortem reconcile-rerun-horizon): a hand re-run over a window older than the Arc providers'
+  // history (Blockdaemon ~70 h, beamrpc 1,000-block logs) cannot find every transaction, so it turns honest books into false
+  // alerts (three were made that way on 6 Oct). Refuse BEFORE any write: exit 3, nothing stored.
+  const HORIZON_H = 60;
+  {
+    const rr = arg('--runs'), from = arg('--from');
+    let openAt = null;
+    if (rr) { const a = Number(String(rr).split(/[ ,]/)[0]); const r0 = await db.get('SELECT started_at FROM runs WHERE run_id=?', [a]); openAt = r0 && r0.started_at; if (!String(rr).includes(',')) { console.error('REFUSED: --runs takes OPEN,CLOSE as one argument (e.g. --runs 314,317)'); process.exit(3); } }
+    else if (from) openAt = from;
+    if (openAt && Date.now() - Date.parse(openAt) > HORIZON_H * 3600000) { console.error('REFUSED: the window opens ' + openAt + ', older than ' + HORIZON_H + ' h: past the providers\' history, a re-run would invent alerts. Nothing written.'); process.exit(3); }
+  }
   const runId = (await db.run('INSERT INTO runs (kind, started_at, method_version) VALUES (?,?,?)', ['reconcile', new Date().toISOString(), METHOD_VERSION])).lastID;
   const errors = [];
   const pairs = [];   // { wallet_id, chain, asset_id, open, close, decimals, status, legs:[], gap, detail }
@@ -393,6 +405,14 @@ const ownerCache = new Map();
   // An older alert whose transaction this run explains is marked superseded, never deleted (Fable review v2 #14).
   const explainedTx = new Set(pairs.flatMap((p) => p.legs.filter((l) => l.tx && !C.ALARM_KINDS.has(l.kind)).map((l) => String(l.tx).toLowerCase())));
   const alarmedTx = new Set(alerts.map((a) => String(a.tx).toLowerCase()));
+  // M4 (Fable recorder review): a 'delta:' or 'drop:' alert is keyed by (wallet, asset, window). A later run over the SAME
+  // window that finds that pair clean closes it; without this such an alert could never close, honestly or otherwise.
+  const winKey = (window.openRun || window.open) + '-' + (window.closeRun || window.close);
+  const cleanWindowKeys = new Set();
+  for (const p of pairs) {
+    const k = p.wallet_id + ':' + p.asset_id + ':' + winKey;
+    if (p.status !== 'incomplete' && p.status !== 'unreadable-token' && !(p.gap && p.gap !== 0n)) { cleanWindowKeys.add(('delta:' + k).toLowerCase()); cleanWindowKeys.add(('drop:' + k).toLowerCase()); }
+  }
   let retracted = 0;
   for (const o of await db.all('SELECT alert_id, tx FROM alerts WHERE superseded_by IS NULL AND (run_id IS NULL OR run_id <> ?)', [runId])) {
     const t = String(o.tx).toLowerCase();
@@ -400,8 +420,8 @@ const ownerCache = new Map();
     // Base58 is case-SENSITIVE: lowercase i and o are valid, uppercase I and O are not. The old class [1-9a-hj-np-z] with /i
     // dropped both, so ~95% of X1/Solana hashes read as "not a chain hash" and their alerts closed themselves in the next
     // run, explained or not (found 2026-09-29 by the money-movers inventory; alerts 310, 313, 314 closed that way).
-    const notChain = !C.isChainRef(o.tx);
-    if ((explainedTx.has(t) && !alarmedTx.has(t)) || notChain) { await db.run('UPDATE alerts SET superseded_by=? WHERE alert_id=?', [runId, o.alert_id]); retracted++; }
+    const notChain = !C.isChainRef(o.tx) && !/^(delta|drop):/i.test(String(o.tx));
+    if ((explainedTx.has(t) && !alarmedTx.has(t)) || (cleanWindowKeys.has(t) && !alarmedTx.has(t)) || notChain) { await db.run('UPDATE alerts SET superseded_by=? WHERE alert_id=?', [runId, o.alert_id]); retracted++; }
   }
 
   const count = (f) => pairs.filter(f).length;

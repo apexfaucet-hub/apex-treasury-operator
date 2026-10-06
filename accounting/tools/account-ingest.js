@@ -49,6 +49,7 @@ const POT_HANDOVER = Date.parse('2026-09-26T12:42:45Z');
   const E = (o) => entries.push(Object.assign({ amount_basis: 'transfer', amount_raw: null, block_time: null, tx: null, wallet_id: null, usd_at_time: null, usd_source: null, counterparty: null,
     counterparty_ours: null, strategy: null, product: null, notes: null }, o));
   const counts = {};
+  const annotationsRefused = [];
   const bump = (s) => { counts[s] = (counts[s] || 0) + 1; };
 
   // 1. x402 settlements (data/settlements.ndjson): income to our receive wallet on that rail.
@@ -81,7 +82,9 @@ const POT_HANDOVER = Date.parse('2026-09-26T12:42:45Z');
     bump('refunds');
     if (!r.refundOf && !r.tx) continue;
     const chain = String(r.chain || 'base').toLowerCase();
-    const from = chain === 'base' ? W.baseOperator : W.arcOperator;
+    // the wallet that sent the refund: r.from when the row names it (6 Oct: the 0.003 USDC Arc refund left the RECEIVE wallet,
+    // read from the transaction), else the operator, as every refund before it
+    const from = r.from ? { id: idOf(chain, r.from) } : (chain === 'base' ? W.baseOperator : W.arcOperator);
     if (r.noteFor) { E({ ts_utc: r.at, chain, tx: r.tx, wallet_id: from ? from.id : null, direction: 'out', asset_id: chain + ':native', amount: 0, category: 'gas', source: 'refunds', source_ref: r.tx + ':note', confidence: 'ledger-only', notes: 'zero-value note transaction (gas only)', counterparty: r.to }); continue; }
     E({ ts_utc: r.at, chain, tx: r.tx, wallet_id: from ? from.id : null, direction: 'out', asset_id: chain === 'base' ? 'base:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913' : 'arc:native', amount: (r.usd == null || r.usd === '' ? null : Number(r.usd)),
       usd_at_time: Number(r.usd) || null, usd_source: 'refunds.usd', counterparty: r.to, counterparty_ours: 0, category: 'refund', source: 'refunds', source_ref: r.tx + ':out', confidence: 'ledger-only', notes: 'refund of ' + r.refundOf });
@@ -202,9 +205,11 @@ const POT_HANDOVER = Date.parse('2026-09-26T12:42:45Z');
       confidence: 'ledger-only', notes: a.probe ? 'our own door-prover; its key is generated per run and not kept, so this XNT is spent for good' : null });
   }
   // 9. annotations: manual moves recorded by Claude sessions (data/protected/account/annotations.ndjson). Only with a full tx hash.
-  for (const a of readLines(path.join(R.DIR, 'annotations.ndjson'))) {
+  // 2026-10-06 (Fable review, gap 1): fee rows and rows that share a key are refused (lib/account/annotation-filter.js).
+  const AF = require('/root/apex-faucet/lib/account/annotation-filter.js').filterAnnotations(readLines(path.join(R.DIR, 'annotations.ndjson')));
+  annotationsRefused.push(...AF.refused);
+  for (const a of AF.accepted) {
     bump('annotations');
-    if (!a.tx || !/^(0x[0-9a-fA-F]{64}|[1-9A-HJ-NP-Za-km-z]{64,90})$/.test(a.tx)) continue;
     E({ ts_utc: a.at, chain: a.chain, tx: a.tx, wallet_id: idOf(a.chain, a.wallet), direction: a.direction || 'out', asset_id: a.asset_id || (a.chain + ':native'), amount: Number(a.amount), usd_at_time: a.usd != null ? Number(a.usd) : null,
       usd_source: a.usd != null ? 'annotation' : null, counterparty: a.to || null, counterparty_ours: a.to ? (R.isInternal(a.chain, a.to) ? 1 : 0) : null, category: a.category || 'manual', source: 'annotations', source_ref: a.tx + ':' + (a.leg || 'out'), confidence: 'ledger-only', notes: String(a.reason || '').slice(0, 200) });
   }
@@ -215,9 +220,13 @@ const POT_HANDOVER = Date.parse('2026-09-26T12:42:45Z');
   const LDIR = path.join(ROOT, 'data', 'ledger');
   let lfiles = [];
   try { lfiles = fs.readdirSync(LDIR).filter((f) => /^[a-z0-9][a-z0-9-]*\.ndjson$/.test(f)); } catch (e) { if (e.code !== 'ENOENT') throw e; }
+  const unreadableLedger = [];
   for (const f of lfiles) {
     const src = 'ledger:' + f.replace(/\.ndjson$/, '');
-    for (const r of readLines(path.join(LDIR, f))) {
+    let rows;
+    try { rows = readLines(path.join(LDIR, f)); }
+    catch (e) { unreadableLedger.push(f + ' (' + (e.code || e.message) + ')'); console.error('[ingest] LEDGER FILE UNREADABLE: ' + f + ' ' + (e.code || e.message)); continue; }   // M5
+    for (const r of rows) {
       bump(src);
       if (r.failed || !r.tx || !/^(0x[0-9a-fA-F]{64}|[1-9A-HJ-NP-Za-km-z]{64,90})$/.test(r.tx) || !(Number(r.amount) > 0)) continue;
       const t = Date.parse(r.at);
@@ -265,10 +274,13 @@ const POT_HANDOVER = Date.parse('2026-09-26T12:42:45Z');
     updated -= added;   // changes() counts inserts and real updates alike; identical rows count 0
   }
   const total = (await db.get('SELECT COUNT(*) n FROM ledger')).n;
-  const summary = { runId, sourceRows: counts, entriesBuilt: entries.length, added, updated, superseded, quarantined, ledgerTotal: total, dry: DRY,
+  if (annotationsRefused.length) console.error('[ingest] ANNOTATIONS REFUSED: ' + annotationsRefused.join(', '));
+  if (quarantined.length) console.error('[ingest] QUARANTINED by the privacy guard (text not shown): ' + quarantined.map((q) => q.source + ' ' + q.source_ref + ' (' + q.kind + ')').join(', '));
+  const summary = { runId, unreadableLedger, annotationsRefused, sourceRows: counts, entriesBuilt: entries.length, added, updated, superseded, quarantined, ledgerTotal: total, dry: DRY,
     extract: { ok: extract.ok, ageMin: extract.ageMin == null ? null : +extract.ageMin.toFixed(1), generatedAt: extract.generatedAt, problems: extract.problems } };
   await db.run('UPDATE runs SET finished_at=?, complete=?, summary_json=? WHERE run_id=?', [new Date().toISOString(), extract.ok ? 1 : 0, JSON.stringify(summary), runId]);
   await db.close();
   console.log(JSON.stringify(summary, null, 1));
+  if (unreadableLedger.length) { console.error('INGEST INCOMPLETE: unreadable ledger files (every other row was stored): ' + unreadableLedger.join(', ')); process.exit(3); }   // M5
   if (!extract.ok) { console.error('INGEST INCOMPLETE: ' + extract.problems.join('; ')); process.exit(3); }
 })().catch((e) => { console.error('INGEST FAILED: ' + (e && e.stack || e)); process.exit(1); });

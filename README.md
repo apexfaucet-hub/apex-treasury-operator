@@ -55,6 +55,13 @@ The limits are in [`limits/LIMITS.md`](limits/LIMITS.md). The code that enforces
 | `operator/buy-and-rate.js` | The purchase workflow (RFB 04: revenue in, pay for a service, record it). It spends at most last week's outside revenue. It buys one real x402 call from another Arc agent, proves the settlement of its own authorization on chain, grades delivery (not taste), and writes an ERC-8004 rating with a public receipt.
 
 First live run, 30 Sep: Argos Bot (#304) was paid 0.007 USDC, delivered, and rated 100. Three agents answered 402 to the official client's payment; nothing settled, so nothing was rated (reported to their maintainer). Reviewed by Fable: 7 must-fixes, all in. |
+| `operator/arc-send-gate.js`, `operator/send-gate.example.json` | One gate every value sender on Arc and Base asks first: per-payment and per-day caps, a destination list checked on chain, a kill file, shadow then enforce, fail closed. |
+| `operator/ledger-log-evm.js` | The recorder for Arc and Base. It reads the value that left from the receipt (on Arc, the native USDC log), bounded by what the sender meant to move. More, or an asset it did not name, is not recorded, so the books alarm. |
+| `operator/arc-gas-refill.js` | Keeps the Arc operator's gas topped up from our own receive wallet, through the gate and the recorder, once per 24 hours, with a drain stop. |
+| `operator/bsc-facilitator.js` | x402 on BNB Smart Chain: USD1 and U by EIP-3009, signing domains proven on chain at boot, the payer's balance read before we spend gas, minimum $0.01. |
+| `checks/arc-outflow-watch.js`, `checks/check-send-gate.js`, `checks/check-account-status.js`, `checks/check-fee-wallets.js` | The alarms: money leaving to a stranger with no record, a gate refusal, the books stopping or finding something new, a gas wallet running low. |
+| `accounting/lib/annotation-filter.js`, `accounting/tools/account-retract.js` | Hand notes may never carry fees and may never overwrite each other; alerts created by a hand-run method error can be retracted only with a stored reason. |
+| `tests/*.test.js` | Planted faults for each control (the recorder replays real Arc transactions into a scratch ledger). |
 | `tests/vault-guard.test.js` | 45 checks: planted forbidden transactions (wrong receiver, stranger as beneficiary, permits, unlimited approvals, fees, exotic transaction types, non-read RPC methods, off-chain signing) must be refused, the legitimate shapes must pass, and three real vaults must be refused. Needs the network. |
 | `checks/bundle-check.js` | The method behind one of our paid checks, published deliberately: was this Arc launch bundled? It reads the launch transaction, the first two minutes of buys, and where each early buyer's USDC came from. It needs our Arc pool index and exit probe (not included) to run. |
 
@@ -68,13 +75,13 @@ First live run, 30 Sep: Argos Bot (#304) was paid 0.007 USDC, delivered, and rat
 ## Honest limits
 - **Revenue is tiny.** The recurring x402 market on Arc is small.
 - **This is the operator's control layer,** not a one-click app. It contains no keys.
-- **The copies differ from live in two ways.** They were taken from the live tree on 30 Sep 2026, and the live tree is the source of truth.
+- **The copies differ from live in two ways.** They were taken from the live tree on 30 Sep 2026 and updated on 6 Oct 2026, and the live tree is the source of truth.
   - **Secret paths:** where the live code names the secret paths on our server (`assert-sandboxed.js`, `sweep-account-safety.js`), these copies read them from an unpublished config instead (`accounting/secret-paths.example.json` shows its shape).
   - **Personal details redacted:**
     - comments reworded in `registry.js`, `extract.js` and `account-snapshot.js`;
     - one test in `account-exit-tests.js` checks the founder's wallets by class instead of by address;
     - the one-off registry seeding tool is not published.
-- **The accounting layer has not reached six clean cycles yet.** Its own alerts caught real gaps: automated payments nobody recorded. Wiring the recorder into the senders is what closes them.
+- **The accounting layer is an alarm, not a certificate.** It runs every 2 hours and raises an alert for any balance change nobody wrote down. On 6 Oct, Arc and Base were fully explained; 14 small X1 fees from older bots are still open.
 - **No money has been parked in a vault yet.** The live probe waits until the accounting layer is ready, so a new kind of outflow never lands while the books are still being proven.
 
 ## Running

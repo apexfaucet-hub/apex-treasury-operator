@@ -19,6 +19,16 @@ APEX Faucet is run day to day by an AI agent (Claude). These are the written lim
   - a deliberate one-off sale must fund something already measured and working.
 - **Price impact:** the swap page asks above 3% impact and refuses above 15%; liquidity builds are held to 3%.
 - **Irreversible actions** (burning liquidity, closing a program, deleting) are stated before they happen, and only on an explicit instruction.
+- **Gas wallets hold gas, not savings** (6 Oct). The Arc operator keeps at most about 2 USDC; it signs settlements and contract calls, and a stolen copy of its key can take only that.
+- **One send gate, written caps** (6 Oct, `operator/arc-send-gate.js`, policy example `operator/send-gate.example.json`):
+  - each sender has a per-payment cap, a per-day cap and its own list of destinations, each checked on chain (a wallet has no code, a contract has code);
+  - the policy file is root-owned, so a bot cannot raise its own cap;
+  - a kill file stops every gated sender;
+  - anything it cannot check is refused (fail closed);
+  - a new sender starts in shadow mode (logged, not stopped) and is enforced after one clean run.
+- **A chain watch behind the gate** (`checks/arc-outflow-watch.js`, every 15 minutes, two independent nodes): every USDC that leaves our Arc wallets must go to one of our wallets, or to a known contract under 2 USDC, or have its transaction hash in our records. Anything else alerts a human at once. A gate protects only the code that calls it; the watch covers the rest.
+- **Gas refills itself, with a drain stop** (`operator/arc-gas-refill.js`): only from our receive wallet to our operator, only under 0.4 USDC, at most 1.2 USDC a day, once per 24 hours. A second need within 24 hours is treated as a suspected drain: nothing is sent, and the alarm goes off instead.
+- **Every send is written down** (`operator/ledger-log.js` for X1/Solana, `operator/ledger-log-evm.js` for Arc/Base): the sender records the value that left, read from the transaction it signed, bounded by what it meant to send. More than that is not recorded, so the books raise an alarm.
 
 ## Idle float (Circle Earn Kit, Arc)
 The operator may park idle USDC in a lending vault only when all of these hold (`operator/vault-guard.js`):

@@ -24,8 +24,9 @@ const READ_METHODS = new Set([
 const ENDPOINTS = {
   x1: ['https://rpc.mainnet.x1.xyz'],
   solana: ['https://api.mainnet-beta.solana.com', 'https://solana-rpc.publicnode.com'],
-  // Arc: beamrpc first (served every read and 10k-block log ranges in our tests); the official RPC rate-limits bursts.
-  arc: ['https://rpc.beamrpc.com', 'https://arc.drpc.org', 'https://rpc.arc-scan.org', 'https://rpc.mainnet.arc.io'],
+  // Arc (2026-10-06): the old deep-log endpoint went dark (Cloudflare 1033). Blockdaemon, from Arc's own chain list, answers reads and
+  // 100,000-block log ranges (~70 h of history); beamrpc now caps getLogs at 1,000 blocks; the official RPC rate-limits bursts.
+  arc: ['https://rpc.blockdaemon.mainnet.arc.io', 'https://rpc.beamrpc.com', 'https://arc.drpc.org', 'https://rpc.mainnet.arc.io'],
   // 1rpc.io/base answered 'This endpoint has been discontinued' on 2026-09-29; these three served a historical block.
   base: ['https://mainnet.base.org', 'https://base-rpc.publicnode.com', 'https://base.drpc.org', 'https://base-mainnet.public.blastapi.io'],
 };
@@ -33,7 +34,7 @@ const ENDPOINTS = {
 // base.drpc.org refuse on the free plan; blastapi allows 10-block ranges; rpc.mainnet.arc.io refuses a 45-address filter
 // (callers chunk the filter to 20). Falling through to an endpoint that cannot answer turned a blip into 'incomplete'.
 const LOG_ENDPOINTS = {
-  arc: ['https://rpc.beamrpc.com', 'https://rpc.arc-scan.org', 'https://rpc.mainnet.arc.io'],
+  arc: ['https://rpc.blockdaemon.mainnet.arc.io', 'https://rpc.beamrpc.com', 'https://rpc.mainnet.arc.io'],
   base: ['https://mainnet.base.org', 'https://base-rpc.publicnode.com'],
 };
 // Minimum gap between two calls to the same host (ms). X1: 350 ms = under 3 req/s.
@@ -57,8 +58,14 @@ async function call(chain, method, params, opts = {}) {
   const urls = opts.endpoints || (method === 'eth_getLogs' && LOG_ENDPOINTS[chain]) || ENDPOINTS[chain];
   if (!urls || !urls.length) throw new RpcError('account layer: no endpoint for chain ' + chain);
   const tries = opts.tries || 5;
-  let last = null;
+  let last = null, nullFrom = null, unanswered = 0;
+  // 2026-10-06 (Fable review): a node that pruned old blocks answers a receipt or transaction lookup with null, as if the
+  // transaction did not exist (Blockdaemon on a 1-Oct and a 4-Oct hash). For lookups by hash a null is therefore not an
+  // answer: ask the next endpoint, and return null only when every endpoint said null.
+  const nullIsNotAnswer = method === 'eth_getTransactionReceipt' || method === 'eth_getTransactionByHash';
+  outer:
   for (const url of urls) {
+    unanswered++;   // undone below when this endpoint answers (with null)
     for (let i = 0; i < tries; i++) {
       await throttle(chain, url);
       try {
@@ -74,10 +81,13 @@ async function call(chain, method, params, opts = {}) {
           break;   // a real error from this endpoint: try the next endpoint, never retry the same wrong question
         }
         if (!('result' in j)) { last = new RpcError(url + ': no result field'); break; }
+        if (j.result === null && nullIsNotAnswer) { nullFrom = nullFrom || url; unanswered--; continue outer; }
         return { result: j.result, url };
       } catch (e) { last = e instanceof RpcError ? e : new RpcError(url + ': ' + String(e.message || e).slice(0, 160)); await sleep(500 * (i + 1)); }
     }
   }
+  // null only when EVERY endpoint answered null; if one of them failed, it might have had it: incomplete, not 'not found'
+  if (nullFrom && unanswered === 0) return { result: null, url: nullFrom };
   throw last || new RpcError('account layer: every endpoint failed for ' + chain + ' ' + method);
 }
 

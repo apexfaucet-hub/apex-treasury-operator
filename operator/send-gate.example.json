@@ -1,0 +1,41 @@
+{
+ "version": "2026-10-06.3",
+ "why": "One place for the caps on every value send out of our Arc/Base wallets (lib/arc-send-gate.js). Root-owned: no bot can raise its own cap. Destinations are copied from data/protected/account/wallet-registry.json, data/arc-apex.json and the senders' own code, each checked on chain (code present for contracts) on 2026-10-06. A sender starts in shadow and moves to enforce only after one full cycle of it ran clean.",
+ "kill_file": "/etc/apex/SEND-STOP",
+ "chains": {
+  "arc": {
+   "id": 5042
+  },
+  "base": {
+   "id": 8453
+  }
+ },
+ "destinations": {
+  "0xd334ab5151c624cada654854e2879903dc4217ed": "our x402 receive wallet",
+  "0x024b82335c29fa5606a8ea5c1d24fc9ead50700c": "our Arc operator",
+  "0x0ba8d43e0176324b5a6ae68e64c37f64e734ae73": "our Arc dip trader",
+  "0x6cf1329447dbfeae5ff2b922b693eb9518c3c9a0": "our UBI holder wallet",
+  "0x6a663faa871f0622ff2435b65f514faf876c59bf": "our watchtower / buy-and-rate wallet",
+  "0x53fb2e89834050afaa9b3090a1fc9d1064615805": "Arc USDC faucet contract (pot)",
+  "0x160168706aab75f6d6b951329706c90f32b25c56": "Arc revenue splitter contract",
+  "0x8366a39cc670b4001a1121b8f6a443a643e40951": "Uniswap v4 PoolManager (data/arc-apex.json; code 24,009 bytes)",
+  "0x53dea4f7783c1de84cecc5c989bc37a557154827": "Arc launchpad router (dip-trader.js ROUTER; code 752 bytes)",
+  "0x4fca4a51ab4f23a7447b3284fbd7d73289a89fb1": "Uniswap UniversalRouter (data/arc-apex.json; code 24,546 bytes)",
+  "0x000000000022d473030f116ddee9f6b43ac78ba3": "Permit2 (data/arc-apex.json; code 9,152 bytes)",
+  "0x77777777dcc4d5a8b6e418fd04d8997ef11000ee": "Circle GatewayWallet (lib/mcp-arc-tools.js; proxy 163 bytes)",
+  "0x87b4a0ded942055641d7b7f5812d698e2124d817": "our Arc swap router (registry; code 2,517 bytes)"
+ },
+ "senders": {
+  "arc-gas-refill": {
+   "mode": "enforce",
+   "wallets": [
+    "0xd334ab5151c624cada654854e2879903dc4217ed"
+   ],
+   "destinations": {
+    "0x024b82335c29fa5606a8ea5c1d24fc9ead50700c": "operator gas"
+   },
+   "per_tx_usdc": 1.2,
+   "per_day_usdc": 1.2
+  }
+ }
+}
