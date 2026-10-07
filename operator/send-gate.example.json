@@ -132,6 +132,16 @@
    "per_tx_usdc": 50.0,
    "per_day_usdc": 100.0,
    "note": "core/arc/arc-move.js relay: USDC signed on SOLANA by the founder key, landing on Arc via LI.FI. chain \"arc\" here means the landing chain; the gate checks the Arc recipient and the amount. The X1/Solana steps of arc-move (sell, lp, consolidate, swap, bridge) sign between our own X1/Solana wallets and are outside this gate. addresses copied 7 Oct from data/arc-apex.json, data/protected/account/wallet-registry.json, tools/cctp-arc-to-base.js, a ledger file; contracts checked for code on Arc, Base recipients checked as EOAs on Base"
+  },
+  "base-refund": {
+   "mode": "enforce",
+   "wallets": [
+    "0x024b82335c29fa5606a8ea5c1d24fc9ead50700c"
+   ],
+   "any_destination": true,
+   "per_tx_usdc": 0.05,
+   "per_day_usdc": 0.2,
+   "note": "tools/refund-base.js (7 Oct): refunds a paid call we did not deliver. The payee is the payer read from the payment transaction on chain, so no fixed list; any_destination with a 0.05 cap per refund and 0.20 a day. Wallet copied from wallet-registry.json base:0x024b8233 (\"gas for refunds\")."
   }
  },
  "_published": "Copy of the live policy (/etc/apex/send-gate.json) on 7 Oct 2026. The founder's personal addresses are redacted; everything else is as enforced."
