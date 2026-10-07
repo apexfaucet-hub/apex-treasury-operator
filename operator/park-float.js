@@ -27,12 +27,15 @@ const { createViemAdapterFromPrivateKey } = require('@circle-fin/adapter-viem-v2
 const KEY = process.env.PARK_KEY;
 const LOG = process.env.PARK_LOG || path.join(__dirname, '..', 'data', 'earn-park.ndjson');
 const LEDGER = process.env.PARK_LEDGER || null;
-const RPC = 'https://rpc.mainnet.arc.io';
+// 7 Oct: the official node answers our server's bursts with "rate limit exceeded" (first live hour failed on it, nothing sent);
+// Blockdaemon serves reads and sends, the official node is the fallback for reads. ARC_RPC overrides.
+const RPC = process.env.ARC_RPC || 'https://rpc.blockdaemon.mainnet.arc.io';
+const RPC_FALLBACK = 'https://rpc.mainnet.arc.io';
 const LIVE = process.argv.includes('--live');
 const PROBE = process.argv.includes('--probe');
 const [mode, vaultArg, amtArg] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const arc = V.defineChain({ id: 5042, name: 'Arc', nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 }, rpcUrls: { default: { http: [RPC] } } });
-const pub = V.createPublicClient({ chain: arc, transport: V.http(RPC, { timeout: 20000 }) });
+const pub = V.createPublicClient({ chain: arc, transport: V.fallback([RPC, RPC_FALLBACK].map((u) => V.http(u, { timeout: 20000 }))) });
 const ALLOW = V.parseAbi(['function allowance(address owner, address spender) view returns (uint256)', 'function approve(address spender, uint256 amount) returns (bool)']);
 const VAULT = V.parseAbi(['function balanceOf(address) view returns (uint256)', 'function convertToAssets(uint256) view returns (uint256)']);
 const big = (k, v) => (typeof v === 'bigint' ? v.toString() : v);

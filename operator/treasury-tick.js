@@ -64,10 +64,11 @@ async function main() {
       if (!pick) { out.decision = 'stayed in the wallet'; out.why = 'no vault passes the guard for ' + amount + ' USDC'; }
       else {
         const r = parkFloat(['park', pick.address, String(amount)]);
-        out.decision = r.code === 0 ? 'parked' : 'park refused';
+        // park-float exits 0 parked, 2 refused by a rule, anything else = an error before or during the send
+        out.decision = r.code === 0 ? 'parked' : r.code === 2 ? 'park refused' : 'error, nothing parked';
         out.vault = { address: pick.address, name: pick.name, apy: pick.apy };
         out.result = r;
-        if (r.code !== 0) out.why = r.record && r.record.refused ? r.record.refused.join(' | ') : r.tail;
+        if (r.code !== 0) out.why = r.record && r.record.refused ? r.record.refused.join(' | ') : (r.tail || String(r.err || '').split('\n').filter(Boolean).slice(0, 3).join(' ') || 'no output');
       }
     }
   }
