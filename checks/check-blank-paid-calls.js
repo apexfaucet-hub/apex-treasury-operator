@@ -20,7 +20,8 @@ const PUBLIC = process.env.BLANK_CHECK_ORIGIN || 'http://127.0.0.1:3000';
     if (!ep.internal || ep.wantsParam || ep.method === 'POST' || /^POST/i.test(ep.method || '')) { skipped.push(ep.path); continue; }
     let pub;
     try {
-      const r = await fetch(PUBLIC + ep.path, { headers: { 'user-agent': 'apex-blank-check/1.0', 'x-real-ip': '8.8.8.8' }, signal: AbortSignal.timeout(20000) });
+      // x-real-ip is TEST-NET-1 (RFC 5737): never a real visitor, so no visitor count can mistake this check for one
+      const r = await fetch(PUBLIC + ep.path, { headers: { 'user-agent': 'apex-blank-check/1.0', 'x-real-ip': '192.0.2.1' }, signal: AbortSignal.timeout(20000) });
       pub = { status: r.status, body: (await r.text()).slice(0, 4000) };
     } catch (e) { bad.push(ep.path + ': public answer unreadable (' + scrub(e.message) + ')'); continue; }
     if (/nothing (has been|was) charged/i.test(pub.body) && pub.status !== 200) { safe.push(ep.path); continue; }
