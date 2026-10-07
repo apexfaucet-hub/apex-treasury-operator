@@ -1,5 +1,5 @@
 {
- "version": "2026-10-06.3",
+ "version": "2026-10-06.5",
  "why": "One place for the caps on every value send out of our Arc/Base wallets (lib/arc-send-gate.js). Root-owned: no bot can raise its own cap. Destinations are copied from data/protected/account/wallet-registry.json, data/arc-apex.json and the senders' own code, each checked on chain (code present for contracts) on 2026-10-06. A sender starts in shadow and moves to enforce only after one full cycle of it ran clean.",
  "kill_file": "/etc/apex/SEND-STOP",
  "chains": {
@@ -36,6 +36,103 @@
    },
    "per_tx_usdc": 1.2,
    "per_day_usdc": 1.2
+  },
+  "arc-dip-trader": {
+   "mode": "enforce",
+   "wallets": [
+    "0x0ba8d43e0176324b5a6ae68e64c37f64e734ae73"
+   ],
+   "global_destinations": true,
+   "per_tx_usdc": 2.0,
+   "per_day_usdc": 8.0,
+   "note": "6 Oct: shadow first. Buys go to the launchpad router (0.80 USDC floor size); the faucet share goes to the pot (whatever is owed). Move to enforce after one clean day; then consider separate caps for buys and the share. | 7 Oct: ENFORCE. Evidence: two planted checks with the trader's exact arguments (buy to the launchpad router 0.80, faucet share to the pot) were allowed; the trader is idle (breaker on, 0.23 USDC under its 1 USDC reserve), so no real day of decisions exists. Its gate call now fails closed."
+  },
+  "arc-buy-and-rate": {
+   "mode": "enforce",
+   "wallets": [
+    "0x6a663faa871f0622ff2435b65f514faf876c59bf"
+   ],
+   "any_destination": true,
+   "per_tx_usdc": 0.01,
+   "per_day_usdc": 0.2,
+   "note": "6 Oct: pays other Arc agents per call; the payee comes from each agent's own 402, so no fixed list; the caps match the script's own MAX_PER_CALL (0.01) and per-run budget (0.20). | 7 Oct: ENFORCE after a real shadow allow (#232, 0.002 USDC, 04:13 UTC); its gate call now fails closed."
+  },
+  "arc-hand-buyback": {
+   "mode": "enforce",
+   "wallets": [
+    "0x024b82335c29fa5606a8ea5c1d24fc9ead50700c"
+   ],
+   "destinations": {
+    "0x4fca4a51ab4f23a7447b3284fbd7d73289a89fb1": "Uniswap UniversalRouter (arc-apex.json pool.universalRouter; 24,546 bytes)",
+    "0x2d644a0aa8e821b31707228f23c387c84134049a": "APEX drip vault (arc-apex.json vault.address; 1,331 bytes)"
+   },
+   "per_tx_usdc": 2.0,
+   "per_day_usdc": 5.0,
+   "tokens": {
+    "0x59933f316417c89d9dc5107b30f08c99b774ea9d": 5000000
+   },
+   "note": "core/arc/buyback-arc.js: USDC -> APEX on our pool; the bought APEX may go on to the vault (token cap in whole APEX). addresses copied 7 Oct from data/arc-apex.json, data/protected/account/wallet-registry.json, tools/cctp-arc-to-base.js, a ledger file; contracts checked for code on Arc, Base recipients checked as EOAs on Base"
+  },
+  "arc-hand-sell-apex": {
+   "mode": "enforce",
+   "wallets": [
+    "0x024b82335c29fa5606a8ea5c1d24fc9ead50700c"
+   ],
+   "destinations": {
+    "0x4fca4a51ab4f23a7447b3284fbd7d73289a89fb1": "Uniswap UniversalRouter (arc-apex.json)"
+   },
+   "per_tx_usdc": 0,
+   "per_day_usdc": 0,
+   "tokens": {
+    "0x59933f316417c89d9dc5107b30f08c99b774ea9d": 2000000
+   },
+   "note": "core/arc/sell-apex-arc.js: a deliberate one-off APEX sale (CLAUDE.md \u00a78); no USDC leaves, APEX capped at 2,000,000 per sale (operator held 1.78M on Arc, 7 Oct). addresses copied 7 Oct from data/arc-apex.json, data/protected/account/wallet-registry.json, tools/cctp-arc-to-base.js, a ledger file; contracts checked for code on Arc, Base recipients checked as EOAs on Base"
+  },
+  "arc-hand-pool": {
+   "mode": "enforce",
+   "wallets": [
+    "0x024b82335c29fa5606a8ea5c1d24fc9ead50700c"
+   ],
+   "destinations": {
+    "0x6049c9a0e26405c0985f9e3685c87d0ae917f82b": "Uniswap v4 PositionManager (arc-apex.json pool.positionManager; 23,877 bytes)"
+   },
+   "per_tx_usdc": 3.0,
+   "per_day_usdc": 3.0,
+   "tokens": {
+    "0x59933f316417c89d9dc5107b30f08c99b774ea9d": 2000000
+   },
+   "note": "core/arc/pool.js (add 2 USDC + APEX full range) and core/arc/pool-withdraw.js (usdc 0: nothing leaves, only the destination is checked). addresses copied 7 Oct from data/arc-apex.json, data/protected/account/wallet-registry.json, tools/cctp-arc-to-base.js, a ledger file; contracts checked for code on Arc, Base recipients checked as EOAs on Base"
+  },
+  "arc-hand-cctp": {
+   "mode": "enforce",
+   "wallets": [
+    "0x024b82335c29fa5606a8ea5c1d24fc9ead50700c",
+    "0xd334ab5151c624cada654854e2879903dc4217ed",
+    "0x0ba8d43e0176324b5a6ae68e64c37f64e734ae73"
+   ],
+   "destinations": {
+    "0x024b82335c29fa5606a8ea5c1d24fc9ead50700c": "our operator on Base",
+    "0xd334ab5151c624cada654854e2879903dc4217ed": "our x402 receive wallet on Base",
+    "0x0000000000000000000000000000000000000001": "the founder's personal Base wallet (address redacted in this copy)"
+   },
+   "per_tx_usdc": 25.0,
+   "per_day_usdc": 50.0,
+   "note": "tools/cctp-arc-to-base.js: the destination checked is the FINAL Base recipient (mintRecipient); the burn goes through TokenMessenger 0x28b5a0e9c621a5badaa536219b3a228c8168cf5d (2,175 bytes on Arc). Before 7 Oct it took any amount to any recipient from the command line. addresses copied 7 Oct from data/arc-apex.json, data/protected/account/wallet-registry.json, tools/cctp-arc-to-base.js, a ledger file; contracts checked for code on Arc, Base recipients checked as EOAs on Base"
+  },
+  "arc-hand-relay": {
+   "mode": "enforce",
+   "wallets": [
+    "<founder Solana wallet, redacted in this copy>"
+   ],
+   "destinations": {
+    "0x024b82335c29fa5606a8ea5c1d24fc9ead50700c": "our Arc operator",
+    "0xd334ab5151c624cada654854e2879903dc4217ed": "our x402 receive wallet",
+    "0x0ba8d43e0176324b5a6ae68e64c37f64e734ae73": "our Arc dip trader"
+   },
+   "per_tx_usdc": 50.0,
+   "per_day_usdc": 100.0,
+   "note": "core/arc/arc-move.js relay: USDC signed on SOLANA by the founder key, landing on Arc via LI.FI. chain \"arc\" here means the landing chain; the gate checks the Arc recipient and the amount. The X1/Solana steps of arc-move (sell, lp, consolidate, swap, bridge) sign between our own X1/Solana wallets and are outside this gate. addresses copied 7 Oct from data/arc-apex.json, data/protected/account/wallet-registry.json, tools/cctp-arc-to-base.js, a ledger file; contracts checked for code on Arc, Base recipients checked as EOAs on Base"
   }
- }
+ },
+ "_published": "Copy of the live policy (/etc/apex/send-gate.json) on 7 Oct 2026. The founder's personal addresses are redacted; everything else is as enforced."
 }

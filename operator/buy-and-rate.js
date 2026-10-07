@@ -232,9 +232,21 @@ async function buyAndRate(t, account, me, startBlock, handed, charge) {
   };
   // Pay only on Arc, only USDC's own EIP-3009 domain, only to the payTo the agent declared, only up to $0.01, only with a
   // short-lived authorization.
-  const policy = (version, reqs) => reqs.filter((r) => r.scheme === 'exact' && r.network === 'eip155:5042' && lc(r.asset) === USDC && lc(r.payTo) === t.payTo
+  const policyOk = (version, reqs) => reqs.filter((r) => r.scheme === 'exact' && r.network === 'eip155:5042' && lc(r.asset) === USDC && lc(r.payTo) === t.payTo
     && BigInt(r.amount || r.maxAmountRequired || 0) <= MAX_PER_CALL_UNITS && Number(r.maxTimeoutSeconds || 0) > 0 && Number(r.maxTimeoutSeconds) <= MAX_AUTH_SECONDS
     && r.extra && r.extra.name === 'USDC' && (!r.extra.assetTransferMethod || r.extra.assetTransferMethod === 'eip3009'));
+  // SEND GATE (2026-10-06): before the client signs, the payment asks operator/arc-send-gate.js (sender
+  // "arc-buy-and-rate", any_destination with a 0.01 cap per payment and 0.20 a day, because each payee comes from that agent's
+  // own 402). Asked once per agent; in shadow mode a breach is logged and alerted, in enforce mode nothing is offered to sign.
+  let gateDecision = null;
+  const policy = (version, reqs) => {
+    const ok = policyOk(version, reqs); if (!ok.length || !LIVE) return ok;
+    if (!gateDecision) {
+      try { gateDecision = require('./arc-send-gate.js').check({ source: 'arc-buy-and-rate', chain: 'arc', chainId: 5042, from: me, to: ok[0].payTo, usdc: Number(BigInt(ok[0].amount || ok[0].maxAmountRequired || 0)) / 1e6, purpose: 'buy-and-rate #' + t.agentId }); }
+      catch (e) { gateDecision = { allow: false, decision: 'unavailable' }; say('SEND GATE UNAVAILABLE, nothing signed:', String(e.message).slice(0, 80)); }   // fail closed (7 Oct, §18)
+    }
+    return gateDecision.allow ? ok : [];
+  };
   const pay = wrapFetchWithPaymentFromConfig(baseFetch, { schemes: [{ network: 'eip155:5042', client: new ExactEvmScheme(account) }], policies: [policy],
     spendControls: { allowedAssets: [{ network: 'eip155:5042', asset: USDC, maxAmountPerPayment: String(MAX_PER_CALL_UNITS) }] } });
   const t0 = Date.now();

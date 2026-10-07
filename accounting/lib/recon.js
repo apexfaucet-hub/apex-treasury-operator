@@ -9,7 +9,7 @@ const rpc = require('./rpc.js');
 const TRANSFER = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 const ARC_NATIVE_LOG = '0xfffffffffffffffffffffffffffffffffffffffe';   // EIP-7708-style log for every native USDC move, 18 decimals
 const ARC_USDC_VIEW = '0x3600000000000000000000000000000000000000';    // ERC-20 VIEW of native USDC: never counted on top
-const LOG_STEP = { arc: 4000n, base: 2000n };
+const LOG_STEP = { arc: 4000n, base: 500n };   // base 500 (7 Oct): mainnet.base.org caps getLogs at 500 blocks, and the fallback publicnode refuses older ranges as "archive"
 const hex = (n) => '0x' + BigInt(n).toString(16);
 const pad = (a) => '0x' + '0'.repeat(24) + String(a).slice(2).toLowerCase();
 const unpad = (t) => '0x' + String(t).slice(-40).toLowerCase();
@@ -93,14 +93,14 @@ async function evmFindSent(chain, address, fromBlock, toBlock, nonceFrom, nonceT
     const { result } = await rpc.call(chain, 'eth_getBlockByNumber', [hex(hi), true]);
     const t = (result && result.transactions || []).find((x) => String(x.from).toLowerCase() === a && Number(BigInt(x.nonce)) === n);
     if (!t) throw new Error('nonce ' + n + ' of ' + address + ' not found in block ' + hi);
-    found.push({ hash: t.hash, nonce: n, block: hi });
+    found.push({ hash: t.hash, nonce: n, block: hi, value: BigInt(t.value || '0x0'), to: t.to ? String(t.to).toLowerCase() : null });
   }
   return found;
 }
 async function evmTxNonce(chain, hash) {
   const { result } = await rpc.call(chain, 'eth_getTransactionByHash', [hash]);
   if (!result) throw new Error('no transaction ' + hash);
-  return { nonce: Number(BigInt(result.nonce)), block: BigInt(result.blockNumber), from: String(result.from).toLowerCase() };
+  return { nonce: Number(BigInt(result.nonce)), block: BigInt(result.blockNumber), from: String(result.from).toLowerCase(), value: BigInt(result.value || '0x0'), to: result.to ? String(result.to).toLowerCase() : null };
 }
 // Owner program of an account (null if it no longer exists), to tell a program account (rent) from a wallet (a payment).
 async function svmOwner(chain, address) {

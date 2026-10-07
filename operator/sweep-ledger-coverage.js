@@ -32,8 +32,9 @@ const senders = [];
 for (const r of ROOTS) for (const f of walk(r, [])) {
   let src = '';
   try { src = fs.readFileSync(f, 'utf8'); } catch (e) { continue; }
-  if (f.endsWith('/lib/ledger-log.js')) continue;
-  if (SEND.test(src)) senders.push({ file: f, covered: /ledger-log(\.js)?['"]/.test(src) });
+  if (f.endsWith('/lib/ledger-log.js') || f.endsWith('/lib/ledger-log-evm.js')) continue; // the recorders themselves (EVM one added 6 Oct)
+  // hand-gate.js (7 Oct) records through lib/ledger-log-evm.js: a file is covered by it only if it also calls its record()
+  if (SEND.test(src)) senders.push({ file: f, covered: /ledger-log(-evm)?(\.js)?['"]/.test(src) || (/hand-gate(\.js)?['"]/.test(src) && /\.record\(/.test(src)) });
 }
 const uncovered = senders.filter((s) => !s.covered).map((s) => s.file).sort();
 

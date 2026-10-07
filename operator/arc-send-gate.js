@@ -69,7 +69,10 @@ function reasons(policy, req, todayAllowedUsdc) {
   if (!(s.wallets || []).map(lc).includes(lc(req.from))) r.push('wallet ' + req.from + ' is not registered for ' + req.source);
   // a sender may use the shared list only when its policy says so; otherwise only its own destinations
   const dest = Object.assign({}, s.global_destinations === true ? (policy.destinations || {}) : {}, s.destinations || {});
-  if (!Object.keys(dest).map(lc).includes(lc(req.to))) r.push('destination ' + req.to + ' is not on the list');
+  // any_destination (2026-10-06): for a sender whose payee comes from a seller's own 402 reply (buy-and-rate pays other agents),
+  // a fixed list cannot exist; the per-payment and per-day caps carry the whole limit, so both must be small and set.
+  if (s.any_destination === true) { if (!(Number(s.per_tx_usdc) <= 0.05)) r.push('any_destination needs a per-payment cap of at most 0.05 USDC'); }
+  else if (!Object.keys(dest).map(lc).includes(lc(req.to))) r.push('destination ' + req.to + ' is not on the list');
   const usdc = Number(req.usdc);
   if (!(usdc >= 0)) r.push('amount missing or not a number');
   else {

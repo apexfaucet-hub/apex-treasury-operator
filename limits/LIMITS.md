@@ -25,10 +25,17 @@ APEX Faucet is run day to day by an AI agent (Claude). These are the written lim
   - the policy file is root-owned, so a bot cannot raise its own cap;
   - a kill file stops every gated sender;
   - anything it cannot check is refused (fail closed);
-  - a new sender starts in shadow mode (logged, not stopped) and is enforced after one clean run.
+  - a new automated sender starts in shadow mode (logged, not stopped) and is enforced after one clean run; a hand tool starts enforced, because a refused hand run loses nothing.
+  - **7 Oct: every gated sender is enforced** (8 senders): the Arc gas refill, the dip trader, the agent buyer (buy-and-rate), and the five hand tools (buyback, APEX sale, liquidity add/withdraw, CCTP Arc to Base, the Solana to Arc relay) through `operator/hand-gate.js`. The callers fail closed too: if the gate module cannot load, nothing is signed.
+  - the hand tools had no written limits before: the CCTP tool would burn any amount to any recipient typed on its command line. Now it may send at most 25 USDC a transfer and 50 a day, only to our own Base wallets or the founder's.
 - **A chain watch behind the gate** (`checks/arc-outflow-watch.js`, every 15 minutes, two independent nodes): every USDC that leaves our Arc wallets must go to one of our wallets, or to a known contract under 2 USDC, or have its transaction hash in our records. Anything else alerts a human at once. A gate protects only the code that calls it; the watch covers the rest.
 - **Gas refills itself, with a drain stop** (`operator/arc-gas-refill.js`): only from our receive wallet to our operator, only under 0.4 USDC, at most 1.2 USDC a day, once per 24 hours. A second need within 24 hours is treated as a suspected drain: nothing is sent, and the alarm goes off instead.
 - **Every send is written down** (`operator/ledger-log.js` for X1/Solana, `operator/ledger-log-evm.js` for Arc/Base): the sender records the value that left, read from the transaction it signed, bounded by what it meant to send. More than that is not recorded, so the books raise an alarm.
+- **The books close every alert with a reason** (7 Oct):
+  - an alert closes when a later run explains it, or by a recorded decision that names what the transactions were (`accounting/tools/account-explain.js`: only unrecorded outflows, at most $0.05 each, only before a stated cutoff; the decision is a run of its own in the audit trail);
+  - the ledger is never back-filled from chain history, because a ledger copied from the chain would also "explain" a drain;
+  - a plain ETH or BNB send leaves no log, so the books read the value of every transaction our wallets sent; a value that cannot be read leaves the window incomplete, never a zero.
+- **A check for live senders that record nothing** (`checks/sweep-live-senders.js`, 7 Oct): it follows every running service, timer and cron line into the code it loads. It fails when a sender there can sign for a wallet the books watch, records nothing, and has no written reason.
 
 ## Idle float (Circle Earn Kit, Arc)
 The operator may park idle USDC in a lending vault only when all of these hold (`operator/vault-guard.js`):

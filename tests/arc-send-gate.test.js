@@ -6,6 +6,8 @@ fs.mkdirSync(path.join(D, 'log'));
 const KILL = path.join(D, 'STOP');
 const policy = JSON.parse(fs.readFileSync('/etc/apex/send-gate.json', 'utf8'));
 policy.kill_file = KILL;
+policy.senders['t-any'] = { mode: 'enforce', wallets: ['0x6a663faa871f0622ff2435b65f514faf876c59bf'], any_destination: true, per_tx_usdc: 0.01, per_day_usdc: 0.2 };
+policy.senders['t-any-big'] = { mode: 'enforce', wallets: ['0x6a663faa871f0622ff2435b65f514faf876c59bf'], any_destination: true, per_tx_usdc: 1, per_day_usdc: 2 };
 policy.senders['t-shadow'] = { mode: 'shadow', wallets: ['0x0ba8d43e0176324b5a6ae68e64c37f64e734ae73'], global_destinations: true, per_tx_usdc: 1, per_day_usdc: 2 };
 fs.writeFileSync(path.join(D, 'policy.json'), JSON.stringify(policy));
 process.env.SEND_GATE_DIR = D; process.env.SEND_GATE_POLICY = path.join(D, 'policy.json');
@@ -31,6 +33,9 @@ fs.writeFileSync(KILL, 'stop'); ok(!G.check(Object.assign({}, base, { usdc: 0.1 
 d = G.check({ source: 't-shadow', chain: 'arc', chainId: 5042, from: '0x0ba8d43e0176324b5a6ae68e64c37f64e734ae73', to: STRANGER, usdc: 0.5 });
 ok(d.allow && d.decision === 'would-deny', 'shadow mode: a breach is logged as would-deny and the send is not stopped');
 ok(G.check({ source: 't-shadow', chain: 'arc', chainId: 5042, from: '0x0ba8d43e0176324b5a6ae68e64c37f64e734ae73', to: '0x53fb2e89834050afaa9b3090a1fc9d1064615805', usdc: 0.5 }).decision === 'allow', 'shadow sender with the shared list: the faucet pot is allowed');
+ok(G.check({ source: 't-any', chain: 'arc', chainId: 5042, from: '0x6a663faa871f0622ff2435b65f514faf876c59bf', to: STRANGER, usdc: 0.007 }).allow, 'any_destination: a stranger payee within a small cap is allowed');
+ok(!G.check({ source: 't-any', chain: 'arc', chainId: 5042, from: '0x6a663faa871f0622ff2435b65f514faf876c59bf', to: STRANGER, usdc: 0.02 }).allow, 'any_destination: over its 0.01 cap is denied');
+ok(!G.check({ source: 't-any-big', chain: 'arc', chainId: 5042, from: '0x6a663faa871f0622ff2435b65f514faf876c59bf', to: STRANGER, usdc: 0.01 }).allow, 'any_destination with a big per-payment cap is refused outright');
 fs.writeFileSync(process.env.SEND_GATE_POLICY, '{broken'); ok(!G.check(Object.assign({}, base, { usdc: 0.1 })).allow, 'an unreadable policy: denied (fail closed)');
 fs.mkdirSync(path.join(D, 'log', '.lock')); const t0 = Date.now(); const dl = G.check(Object.assign({}, base, { usdc: 0.1 }));
 ok(!dl.allow && /lock busy/.test(dl.reasons.join()) && Date.now() - t0 >= 9000, 'a lock held by someone else: denied after 10 s (fail closed)');

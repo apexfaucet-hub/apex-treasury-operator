@@ -52,9 +52,7 @@ The limits are in [`limits/LIMITS.md`](limits/LIMITS.md). The code that enforces
 | `operator/data-pass.js` | The $5 card pass: the key is derived and never stored; one payment is one pass; refunds and disputes revoke it; a call we fail to answer is not charged. |
 | `operator/prices.js` | One price list for every payment rail and every public surface. |
 | `operator/vault-guard.js`, `operator/park-float.js`, `operator/vault-check.js`, `tools/vault-board.js` | Idle float with Circle Earn Kit. On-chain payout check (idle funds plus the vault's own withdraw market), a send gate that decodes every transaction, an exit rule, and a board of every Arc USDC vault. **On 30 Sep no vault passed every rule** (`data/vault-board-2026-09-30.json`): 22 failed the liquidity checks or carry Circle's own warnings; 2 passed the on-chain checks, but earn less than their gas at any size within our 5 USDC cap. |
-| `operator/buy-and-rate.js` | The purchase workflow (RFB 04: revenue in, pay for a service, record it). It spends at most last week's outside revenue. It buys one real x402 call from another Arc agent, proves the settlement of its own authorization on chain, grades delivery (not taste), and writes an ERC-8004 rating with a public receipt.
-
-First live run, 30 Sep: Argos Bot (#304) was paid 0.007 USDC, delivered, and rated 100. Three agents answered 402 to the official client's payment; nothing settled, so nothing was rated (reported to their maintainer). Reviewed by Fable: 7 must-fixes, all in. |
+| `operator/buy-and-rate.js` | The purchase workflow (RFB 04: revenue in, pay for a service, record it). It spends at most last week's outside revenue. It buys one real x402 call from another Arc agent, proves the settlement of its own authorization on chain, grades delivery (not taste), and writes an ERC-8004 rating with a public receipt. |
 | `operator/arc-send-gate.js`, `operator/send-gate.example.json` | One gate every value sender on Arc and Base asks first: per-payment and per-day caps, a destination list checked on chain, a kill file, shadow then enforce, fail closed. |
 | `operator/ledger-log-evm.js` | The recorder for Arc and Base. It reads the value that left from the receipt (on Arc, the native USDC log), bounded by what the sender meant to move. More, or an asset it did not name, is not recorded, so the books alarm. |
 | `operator/arc-gas-refill.js` | Keeps the Arc operator's gas topped up from our own receive wallet, through the gate and the recorder, once per 24 hours, with a drain stop. |
@@ -64,6 +62,11 @@ First live run, 30 Sep: Argos Bot (#304) was paid 0.007 USDC, delivered, and rat
 | `tests/*.test.js` | Planted faults for each control (the recorder replays real Arc transactions into a scratch ledger). |
 | `tests/vault-guard.test.js` | 45 checks: planted forbidden transactions (wrong receiver, stranger as beneficiary, permits, unlimited approvals, fees, exotic transaction types, non-read RPC methods, off-chain signing) must be refused, the legitimate shapes must pass, and three real vaults must be refused. Needs the network. |
 | `checks/bundle-check.js` | The method behind one of our paid checks, published deliberately: was this Arc launch bundled? It reads the launch transaction, the first two minutes of buys, and where each early buyer's USDC came from. It needs our Arc pool index and exit probe (not included) to run. |
+| `operator/hand-gate.js` | 7 Oct: the hand-run money tools (buyback, APEX sale, liquidity, CCTP Arc to Base, Solana to Arc relay) ask the send gate before they sign and record what they sent. Refused means exit 4 and nothing signed. |
+| `accounting/tools/account-explain.js` | 7 Oct: closes old, tiny unrecorded-outflow alerts by a recorded decision that says what they were (max $0.05 each, raised before a cutoff, inside the sandbox). It never writes ledger rows from chain history. |
+| `checks/sweep-live-senders.js` | 7 Oct: follows every running service, timer and cron line into the code it loads, and fails when a sender there can sign for a watched wallet and records nothing. |
+
+First live run, 30 Sep: Argos Bot (#304) was paid 0.007 USDC, delivered, and rated 100. Three agents answered 402 to the official client's payment; nothing settled, so nothing was rated (reported to their maintainer). Reviewed by Fable: 7 must-fixes, all in.
 
 ## How to verify us (no trust needed)
 - Paid endpoints and prices: https://apexfaucet.xyz/.well-known/x402

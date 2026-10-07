@@ -279,7 +279,7 @@ const ownerCache = new Map();
           for (const t of sentTxs) { const k = await X.evmTxNonce(chain, t.h); known.push({ nonce: k.nonce, block: k.block }); }
           const extra = await X.evmFindSent(chain, e.address, fromBlock, toBlock, Number(nonceOpen), Number(nonceClose), known, 400);
           const rc = await X.evmReceipts(chain, extra.map((x) => x.hash));
-          for (const x of extra) sentTxs.push({ h: x.hash, gas: rc.get(x.hash).gas, noLog: true });
+          for (const x of extra) sentTxs.push({ h: x.hash, gas: rc.get(x.hash).gas, noLog: true, value: x.value, to: x.to });
           sendSearch = 'found ' + extra.length + ' sent tx without a Transfer log by nonce';
         } catch (x) { sendSearch = 'nonce search failed: ' + x.message; }
       }
@@ -343,6 +343,21 @@ const ownerCache = new Map();
         }
         if (asset === chain + ':native') {
           for (const t of sentTxs) { sum -= t.gas; p.legs.push({ tx: t.h, raw: -t.gas, kind: 'fee', gas: true }); }   // gas of this wallet's own sent txs
+          // NATIVE VALUE SENT (7 Oct): on Base and BNB a plain coin transfer emits no log, so a send of ETH/BNB was invisible
+          // here and showed up as an unaccounted delta (0.00005 ETH to the founder, 6 Oct, although recorded). Arc is excluded: its
+          // native moves already come through the system log. Each own sent tx with value > 0 becomes a leg, classified like
+          // any other outflow (the ledger must record it, or it alarms).
+          if (chain !== 'arc') for (const t of sentTxs) {
+            let v = t.value, to = t.to;
+            if (v == null) { try { const k = await X.evmTxNonce(chain, t.h); v = k.value; to = k.to; } catch (x) { p.valueUnread = (p.valueUnread || []).concat(t.h + ': ' + String(x.message).slice(0, 80)); v = null; } }
+            if (v == null || v === 0n) continue;
+            sum -= v;
+            const lv = verdict(t.h, e.id, asset, -v, 18, { gasRaw: t.gas, spareGas });
+            const res = C.classifyOutflow({ valued: valued(asset), ledger: lv, contractEvent: false, allCounterpartiesOurs: ours(chain, to), tradeEvidence: null, burned: to === '0x0000000000000000000000000000000000000000' });
+            const leg = { tx: t.h, raw: -v, counterparty: [to], kind: res.kind, nativeValue: true };
+            if (res.note) leg.note = res.note; if (res.diff) leg.ledgerVsChain = res.diff;
+            p.legs.push(leg);
+          }
           if (nonceOpen != null) {
             const undiscovered = Number(nonceClose - nonceOpen) - sentTxs.length;
             p.sent = { nonceDelta: Number(nonceClose - nonceOpen), found: sentTxs.length, notFound: undiscovered, search: sendSearch };
@@ -352,6 +367,8 @@ const ownerCache = new Map();
         p.gap = (p.close - p.open) - sum;
         // Never zero a gap by estimate (Fable review v2 #16): sent txs that could not be located leave the pair incomplete.
         if (p.unlocated) { p.status = 'incomplete'; p.detail = p.unlocated + ' sent tx not located (' + sendSearch + '); gap ' + p.gap; continue; }
+        // a sent tx whose value could not be read is a failed read, never a zero (§1): the pair is incomplete, not an alarm
+        if (p.valueUnread) { p.status = 'incomplete'; p.detail = 'value of ' + p.valueUnread.length + ' sent tx unreadable (' + p.valueUnread[0] + '); gap ' + p.gap; continue; }
         p.status = p.gap !== 0n ? 'unaccounted' : p.legs.some((l) => C.ALARM_KINDS.has(l.kind)) ? 'alert' : (p.open === p.close && !p.legs.length ? 'match' : 'reconciled');
       }
     }
