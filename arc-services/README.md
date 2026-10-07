@@ -14,3 +14,12 @@ Live at apexfaucet.xyz. Everything here reads Arc mainnet (chain 5042) directly;
 | `arc-watchtower-gas.js` | Tops up the rater's gas between our own wallets through the send gate (1 USDC a day cap). |
 
 We never write a rating about ourselves, and nothing is given in return for a rating.
+
+## The operator's hour (operator/treasury-tick.js)
+
+Runs every hour on our server. If the treasury holds a vault position it runs the exit rule (`park-float.js check`); otherwise
+it picks the best-paying USDC vault that `vault-guard.js` allows and runs `park-float.js park`, which still refuses unless the
+books are sure (latest cycle complete, no open Arc/Base alert), 30 days of yield pay for the gas in and out, the central send
+gate (`SEND_GATE_LIB`, sender `arc-treasury-park`: our UBI wallet, Circle's Earn adapter only, 1 USDC per send, 2 a day) and
+the transaction-shape gate all pass. Every hour's decision and its reasons are written down, including "did nothing". On
+7 Oct the guard allowed one vault for 0.46 USDC and the economics rule refused it (30-day yield 0.00065 USDC < 0.020 gas).

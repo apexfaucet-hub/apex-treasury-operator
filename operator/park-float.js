@@ -9,8 +9,11 @@
 //
 // PARK_KEY: a JSON file {address, privateKey}; no default, and never printed. PARK_LOG: decision log (default
 // ./data/earn-park.ndjson). PARK_LEDGER: where each sent outflow is recorded for the accountant (required with --live).
-// ACCOUNT_SUMMARY: the accounting layer's summary; --live refuses unless it says ready (6 clean cycles in a row), so a
-// new kind of outflow never lands while the books are still being proven.
+// ACCOUNT_SUMMARY: the accounting layer's summary; --live refuses unless its latest cycle is complete, not expired, and has no
+// open Arc/Base alert (7 Oct 2026: replaces "6 clean cycles in a row", a goal the owner dropped on 6 Oct), so a new outflow
+// never lands while the books are unsure.
+// SEND_GATE_LIB: the central send gate (lib/arc-send-gate.js on our server: wallets, destinations, per-tx and per-day caps,
+// sender "arc-treasury-park"); --live refuses without it. It sits in front of this file's own transaction-shape gate.
 // Every live result is re-read on chain (receipts, our USDC, our shares, the standing allowance) before it is written
 // down; the SDK's word is not the record. A leftover allowance with no deposit behind it is revoked at the end.
 const fs = require('fs');
@@ -59,9 +62,18 @@ async function main() {
 
   if (LIVE) {
     if (!LEDGER) { console.log('--live needs PARK_LEDGER: every outflow is recorded for the accountant'); process.exit(64); }
-    // the summary keeps it at readiness.ready (6 clean cycles in a row); anything unreadable counts as not ready
-    let ready = false; try { const sm = JSON.parse(fs.readFileSync(process.env.ACCOUNT_SUMMARY || '', 'utf8')); ready = !!(sm.readiness && sm.readiness.ready === true); } catch (_) {}
-    if (!ready) { record({ mode, vault, refused: ['accounting layer not ready (or ACCOUNT_SUMMARY unreadable): no new outflow kind while the books are being proven'] }); process.exit(2); }
+    // the books must be sure: latest cycle complete, summary not expired, no open Arc/Base alert; anything unreadable counts as unsure
+    let booksOk = false, why = 'ACCOUNT_SUMMARY unreadable';
+    try {
+      const sm = JSON.parse(fs.readFileSync(process.env.ACCOUNT_SUMMARY || '', 'utf8'));
+      const open = ((sm.alerts && sm.alerts.items) || []).filter((a) => a.chain === 'arc' || a.chain === 'base');
+      if (sm.complete !== true) why = 'the latest books cycle is incomplete';
+      else if (!(Date.parse(sm.expires_at) > Date.now())) why = 'the books summary has expired';
+      else if (open.length) why = open.length + ' open Arc/Base alert(s) in the books';
+      else booksOk = true;
+    } catch (_) {}
+    if (!booksOk) { record({ mode, vault, refused: ['books not sure: ' + why + ' (no new outflow until they are)'] }); process.exit(2); }
+    if (!process.env.SEND_GATE_LIB) { record({ mode, vault, refused: ['SEND_GATE_LIB not set: a live send needs the central send gate'] }); process.exit(2); }
     const [pending, latest] = await Promise.all([pub.getTransactionCount({ address: me, blockTag: 'pending' }), pub.getTransactionCount({ address: me, blockTag: 'latest' })]);
     if (pending !== latest) { record({ mode, vault, refused: ['this wallet has a pending transaction (another sender is active): try again later'] }); process.exit(2); }
   }
@@ -117,9 +129,17 @@ async function main() {
     }
   }
 
+  // Central send gate, last check before anything is signed: wallet, destination (Circle's Earn adapter) and the day's caps.
+  let gateReq = null;
+  if (LIVE) {
+    gateReq = { source: 'arc-treasury-park', chain: 'arc', chainId: 5042, from: me, to: G.EARN_ADAPTER, usdc: mode === 'park' ? amountUsd : 0, purpose: mode + ' ' + vault };
+    let gd; try { gd = require(process.env.SEND_GATE_LIB).check(gateReq); } catch (e) { gd = { allow: false, reasons: ['send gate error: ' + e.message] }; }
+    if (!gd || !gd.allow) { record({ mode, vault, amountUsd, refused: ['central send gate: ' + ((gd && gd.reasons) || []).join('; ')] }); process.exit(2); }
+  }
   let result = null, err = null;
   try { result = mode === 'park' ? await kit.deposit({ from, vaultAddress: vault, amount, config: { batchTransactions: false } }) : await kit.withdraw({ from, vaultAddress: vault, amount, config: { batchTransactions: false } }); }
   catch (e) { err = String(e.message).slice(0, 300); }
+  if (err && gateReq && !trail.some((t) => t.gate === 'SENT')) { try { require(process.env.SEND_GATE_LIB).release(gateReq, 'nothing broadcast: ' + err.slice(0, 120)); } catch (_) {} }
 
   // Re-read everything from the chain. A standing USDC allowance with no deposit behind it is revoked (the adapter is an
   // upgradeable proxy, so an unused allowance is exposure); the SDK's 1-unit residual is left, it is its design.
