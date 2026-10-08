@@ -9,27 +9,30 @@ Live: https://apexfaucet.xyz
 
 ## What it is
 APEX Faucet is a live business on Arc and X1: a free USDC faucet for people, and paid on-chain data for AI agents. It has one human founder. **An AI agent (Claude) operates it day to day.** It:
-- **Earns:** sells 66 data endpoints per call over x402 (USDC on Arc and Base, Circle Gateway nanopayments, Solana, X1), plus a $5 card pass for agents without a wallet.
+- **Earns:** sells data per call over x402 (90 paid products on 8 Oct; USDC on Arc and Base, Circle Gateway nanopayments, Solana, BNB, X1), with an MCP server of 153 tools, plus a $5 card pass for agents without a wallet.
 - **Holds and moves funds:**
   - its Arc trader pays half of every winning close into the faucet (in batches, since 24 Sep);
   - it bridges with CCTP and prices its own products;
   - it buys services from other Arc agents, paid out of last week's revenue, and rates them on chain with a public receipt (`operator/buy-and-rate.js`);
-  - it tests yield with small, capped amounts: UBI on Arc bought for 19.50 USDC, held for that token's daily USDC payouts (first payout still pending).
+  - it tests yield with small, capped amounts: UBI on Arc bought for 19.50 USDC and held for that token's daily USDC payouts: 0.168 USDC received 1-7 Oct (the payout contract's own `claimed` total).
 - **Pays out:** the Arc faucet pays USDC from a public contract with no withdraw function (`0x53fb2e89834050afaa9b3090a1fc9d1064615805`), three times a day per person.
 - **Keeps books it cannot fake:**
-  - A sandboxed accounting layer reconciles every registered wallet every two hours and records an alert on any outflow nobody recorded. Delivery of those alerts to a human is not connected yet: the layer is still in its six-clean-cycle proving run (0 of 6 on 30 Sep).
-  - A shared payment recorder has been written and reviewed, but it is **not yet wired into any sender** (0 of 380 on 30 Sep).
-  - A second model reviews anything touching money, keys or public endpoints before it goes live.
+  - A sandboxed accounting layer (no keys, allowlisted network only) reconciles every registered wallet every two hours and records an alert on any outflow nobody recorded. Its exit tests, planted faults and September backtests, all pass on 8 Oct.
+  - A shared payment recorder writes down what each sender sent, from the transaction it signed; 17 sending code paths use it, and a nightly check fails any new sender that does not.
+  - A central send gate (`/etc/apex/send-gate.json`, root-owned) puts per-payment and per-day caps on every value send on Arc and Base, and a fixed list of destinations on most of them: 16 senders, all enforced.
+  - A second model reviews new contracts and changes with real money at stake before they go live.
+
+**New, 7 Oct: [Arc Mandate](https://github.com/apexfaucet-hub/arc-mandate)**, the same idea made on chain for anyone: a spending box with rules for AI agents. The owner puts USDC in and sets the agent, the most per payment, payments per UTC day, payees and an end date; the contract checks every payment, by standard x402 (EIP-3009 with the box as payer, approved through EIP-1271) or directly. No admin, no fee. Live at [apexfaucet.xyz/arc/mandate/](https://apexfaucet.xyz/arc/mandate/), source-verified on the Arc explorer, with an x402 payment, a direct payment and an over-limit refusal on mainnet.
 
 The limits are in [`limits/LIMITS.md`](limits/LIMITS.md). The code that enforces them is below.
 
-## Traction (read 30 Sep 2026, 03:03 UTC; small, and stated as it is)
-- **28 payments from 8 outside wallets**, $0.30 in total. Every one of our own wallets is excluded.
-- **Our first repeat agent customer:** an autonomous trading agent on Arc buys our Arc new-launch feed again and again (we name no customer).
-- **196 USDC claims paid** by the Arc faucet contract (6.46 USDC).
+## Traction (read 8 Oct 2026, ~04:00 UTC; small, and stated as it is)
+- **464 paid calls from 13 outside wallets**, $2.08 in total ($0.11 refunded). Every one of our own wallets is excluded.
+- **Our first repeat agent customer** was an autonomous trading agent on Arc that bought our Arc new-launch feed again and again; it stopped on 2-3 Oct when its own balance ran out (we name no customer).
+- **246 USDC claims paid** by the Arc faucet contract (6.96 USDC); the X1 faucet has paid 7,185 claims to 1,307 wallets since 25 Nov 2025.
 - **Registry:**
   - We are ERC-8004 agent #1 in Arc's identity registry; since 30 Sep its wallet is the address our revenue lands in.
-  - Our Watchtower (#211) checks every registered Arc agent, 345 today, every hour for liveness and payability.
+  - Our Watchtower (#211) checks every registered Arc agent every hour: 2,306 registered, 1,113 answering, 81 payable on Arc (7 Oct).
 - **Circle's seller readiness check** reported 100/100 on 30 Sep.
 
 ## Circle tools used
