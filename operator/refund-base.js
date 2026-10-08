@@ -7,6 +7,7 @@
 //     amount come from the log, never from a message or from memory (CLAUDE.md §2, §4b);
 //   - refused if data/refunds.ndjson already has a refund of that payment, or the amount is above 0.05 USDC (a bigger refund is
 //     a decision for a human-readable reason, not this tool);
+//   - the payer is screened first (lib/sanctions.js OFAC SDN list + USDC isBlacklisted on chain; no current list = refused);
 //   - the send asks the send gate (sender base-refund in /etc/apex/send-gate.json);
 //   - the record IS the refund line in data/refunds.ndjson (tools/account-ingest.js reads it as ledger source 'refunds', and
 //     lib/settlements.js nets it from revenue). It is not also written through lib/ledger-log-evm.js: two rows for one
@@ -43,6 +44,12 @@ const MAX = 0.05;
   const have = await pub.readContract({ address: USDC, abi: erc, functionName: 'balanceOf', args: [account.address] });
   console.log(JSON.stringify({ payment: pay, payer, usd, payerIsContract: !!(code && code !== '0x'), from: account.address, fromUsdc: Number(have) / 1e6, reason }));
   if (have < raw) { console.error('REFUSED: the operator holds ' + Number(have) / 1e6 + ' USDC on Base'); process.exit(3); }
+  // SANCTIONS (2026-10-08, CLAUDE.md §9): screened before any send, dry run included; no current list = no refund (fail closed).
+  let sc; try { sc = await require('/root/apex-faucet/lib/sanctions.js').checkEvm(payer); } catch (e) { console.error('REFUSED: ' + e.message); process.exit(3); }
+  if (sc.listed) { console.error('REFUSED: ' + payer + ' is on the OFAC SDN list (' + sc.name + '). Do not refund; a human decides.'); process.exit(3); }
+  const blk = await pub.readContract({ address: USDC, abi: v.parseAbi(['function isBlacklisted(address) view returns (bool)']), functionName: 'isBlacklisted', args: [payer] });
+  if (blk) { console.error('REFUSED: ' + payer + ' is on the USDC blacklist'); process.exit(3); }
+  console.log('sanctions: not on the OFAC SDN list (' + sc.addresses + ' addresses, copy ' + sc.listAgeDays + ' days old), not USDC-blacklisted');
   if (!LIVE) return console.log('dry run (add --live to send)');
   const greq = { source: 'base-refund', chain: 'base', chainId: 8453, from: account.address, to: payer, usdc: usd, purpose: 'refund of ' + pay };
   H.mustAllow(greq);

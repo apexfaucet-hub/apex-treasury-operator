@@ -92,6 +92,15 @@ async function verify(payload, requiredUsd, asset) {
   return { valid: true, from, value, sym, token: t.address, usd: Number(value / 10n ** 12n) / 1e6, message };
 }
 
+// SIMULATE BEFORE SENDING (2026-10-08). A signed authorization from a wallet without the money passed verify (the signature is fine)
+// and the settlement was SENT: it reverted on chain and we paid the gas. Anyone could drain the operator's gas by signing payments
+// from empty wallets (two such Base transactions came from our own test with Coinbase's official client). The exact call is now
+// simulated first; a call that would revert is refused, nothing sent, and the reason says so (insufficient_funds when it is money).
+function _wouldFail(e) {
+  const msg = String((e && (e.shortMessage || e.message)) || e);
+  return { success: false, errorReason: /exceeds balance|insufficient|transfer amount exceeds/i.test(msg) ? 'insufficient_funds' : 'invalid_payment',
+    errorMessage: 'the settlement would fail on chain, so it was not sent (nothing charged): ' + msg.slice(0, 140) };
+}
 async function settle(payload, requiredUsd, asset) {
   const v = await verify(payload, requiredUsd, asset);
   if (!v.valid) return { success: false, errorReason: 'invalid_payment', errorMessage: v.reason };
@@ -99,8 +108,9 @@ async function settle(payload, requiredUsd, asset) {
   const wal = createWalletClient({ chain: bsc, transport: transport(), account: acct });
   const s = hexToSignature(payload.signature); const m = v.message;
   try {
-    const hash = await wal.writeContract({ address: v.token, abi, functionName: 'transferWithAuthorization',
-      args: [m.from, m.to, m.value, m.validAfter, m.validBefore, m.nonce, s.v ? Number(s.v) : (27 + s.yParity), s.r, s.s], gas: 150000n });
+    const args = [m.from, m.to, m.value, m.validAfter, m.validBefore, m.nonce, s.v ? Number(s.v) : (27 + s.yParity), s.r, s.s];
+    try { await pub.simulateContract({ address: v.token, abi, functionName: 'transferWithAuthorization', args, account: acct }); } catch (e) { return _wouldFail(e); }
+    const hash = await wal.writeContract({ address: v.token, abi, functionName: 'transferWithAuthorization', args, gas: 150000n });
     let mined = null;
     for (let i = 0; i < 20; i++) { try { const rc = await pub.getTransactionReceipt({ hash }); if (rc) { mined = rc; break; } } catch (e) {} await new Promise((r) => setTimeout(r, 1500)); }
     if (!mined) return { success: false, errorReason: 'settlement_pending', transaction: hash };

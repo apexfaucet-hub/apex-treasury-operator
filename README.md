@@ -26,8 +26,8 @@ APEX Faucet is a live business on Arc and X1: a free USDC faucet for people, and
 
 The limits are in [`limits/LIMITS.md`](limits/LIMITS.md). The code that enforces them is below.
 
-## Traction (read 8 Oct 2026, ~04:00 UTC; small, and stated as it is)
-- **464 paid calls from 13 outside wallets**, $2.08 in total ($0.11 refunded). Every one of our own wallets is excluded.
+## Traction (read 8 Oct 2026, 10:35 UTC; small, and stated as it is)
+- **550 paid calls from 14 outside wallets**, $2.73 in total ($0.135 refunded in 11 refunds). Every one of our own wallets is excluded.
 - **Our first repeat agent customer** was an autonomous trading agent on Arc that bought our Arc new-launch feed again and again; it stopped on 2-3 Oct when its own balance ran out (we name no customer).
 - **246 USDC claims paid** by the Arc faucet contract (6.96 USDC); the X1 faucet has paid 7,185 claims to 1,307 wallets since 25 Nov 2025.
 - **Registry:**
@@ -35,8 +35,25 @@ The limits are in [`limits/LIMITS.md`](limits/LIMITS.md). The code that enforces
   - Our Watchtower (#211) checks every registered Arc agent every hour: 2,306 registered, 1,113 answering, 81 payable on Arc (7 Oct).
 - **Circle's seller readiness check** reported 100/100 on 30 Sep.
 
+## 8 Oct: the operator paid itself the way real buyers pay, and fixed what that showed
+Our own tests had been green for weeks. On 8 Oct the operator stopped trusting them and paid every rail with the buyers' own
+software, from brand-new empty wallets (nothing can be charged), and changed the code where a buyer would have been refused:
+- **Solana: every standard x402 payment had been refused** (`network_mismatch`): the router lowercased Solana's base58 network
+  id, and the verifier was handed the short name. Found with Coinbase's official `@x402/svm`; now refused only for lack of funds.
+- **Base, Arc, BNB: a payment from a wallet without the money was sent anyway**, reverted on chain, and we paid the gas (anyone
+  could drain the operator this way). Every settlement is now simulated first (`operator/bsc-facilitator.js` shows the pattern);
+  empty-wallet payments are refused as `insufficient_funds` and the operator's nonce does not move.
+- **Circle Gateway proven with Circle's own client:** `GatewayClient.pay()` from `@circle-fin/x402-batching` reaches Gateway on
+  Arc and on Base and is refused only as `insufficient_balance` (`checks/check-gateway-official-client.js`).
+- **Agents on the current A2A SDK could not talk to us** (`@a2a-js/sdk` 1.x sends `SendMessage`); both A2A 0.3 and 1.0 now answer.
+  The official MCP SDK connects to all three of our MCP servers.
+- **Charged for nothing:** an auditor paid for X1 products with a Base address and got empty answers. The operator refunded all 8
+  calls itself, and inputs a product cannot answer are now refused before payment. Refunds now pass a sanctions screen first
+  (`operator/sanctions.js`: the OFAC SDN Ethereum list plus USDC's own `isBlacklisted`, fail closed).
+The tests that found these are in `checks/check-*-official-client.js` (run by hand).
+
 ## Circle tools used
-- **Circle Gateway:** gasless nanopayments accepted on Arc and Base.
+- **Circle Gateway:** gasless nanopayments accepted on Arc and Base, verified with Circle's own `GatewayClient.pay()` (8 Oct).
 - **USDC as gas on Arc:** EIP-3009 settlement.
 - **CCTP:** bridging.
 - **Circle's x402 seller spec:** our OpenAPI carries `x-guidance`.
