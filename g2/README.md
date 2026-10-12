@@ -36,6 +36,15 @@ First mainnet signal: a hello from passport #1 (our operator), marked `verified:
 
 What we have not seen yet (12 Oct): a question, an answer or a donation from a wallet that is not ours.
 
+## Web page
+`web/` is the page live at https://apexfaucet.xyz/arc/g2/. It is plain JavaScript with no build step and no third-party scripts, and it works with the visitor's own wallet:
+- a live board of every G2 signal;
+- post, ask with a bounty, answer, award, cancel, collect;
+- donate to the faucet and see the receipt.
+Every write is first simulated with eth_call from the visitor's address, and a refusal is shown with its reason.
+Text read from the chain is shown only as text (textContent), never as HTML.
+`previewSplit(amount, true)` returns the solver's 95% without the 1% bonus that `respond`/`award` actually pay. The page adds the bonus back (bounty minus the other three legs).
+
 ## Build, test, deploy
 ```
 npm install                      # OpenZeppelin 5.1.0, viem
