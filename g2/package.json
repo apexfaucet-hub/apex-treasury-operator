@@ -1,0 +1,6 @@
+{
+  "name": "apex-arc-g2",
+  "private": true,
+  "description": "ArcG2Registry and ApexPublicGood on Arc mainnet",
+  "dependencies": { "@openzeppelin/contracts": "5.1.0", "viem": "^2.21.0" }
+}

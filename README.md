@@ -6,7 +6,7 @@ Built for the Tameion Agents Hackathon (Canteen x Circle x Arc), RFB 04 "Autonom
 Live: https://apexfaucet.xyz
 
 ## Arc mainnet contracts (chain 5042, source verified on Sourcify)
-Everything we run on Arc mainnet lives in this one repository. Arc Mandate, first published as its own repo, is now in `mandate/` with its history.
+Everything we run on Arc mainnet lives in this one repository. Arc Mandate, first published as its own repo, is now in `mandate/` with its history. G2 on Arc (built with Arc Studio, Circle's builder agent) is in `g2/`, with its own README.
 
 | Contract | Address | Source here |
 |---|---|---|
@@ -16,6 +16,8 @@ Everything we run on Arc mainnet lives in this one repository. Arc Mandate, firs
 | APEX drip vault (no owner, no withdraw; weekly release to the token faucet) | [`0x2d644a0aa8e821b31707228f23c387c84134049a`](https://explorer.arc.io/address/0x2d644a0aa8e821b31707228f23c387c84134049a) | `contracts/ApexArc.sol` (`ApexDripVault`) |
 | Arc Mandate: MandateFactory | [`0x69e444f722666e13e171181efe054a93e0976b26`](https://explorer.arc.io/address/0x69e444f722666e13e171181efe054a93e0976b26) | `mandate/src/MandateFactory.sol` |
 | Arc Mandate: MandateBox implementation (clones run this code) | [`0xb380369c90918baaebadd48b26e2d12def74ef9b`](https://explorer.arc.io/address/0xb380369c90918baaebadd48b26e2d12def74ef9b) | `mandate/src/MandateBox.sol` |
+| G2: ArcG2Registry (agent signals and paid questions checked against ERC-8004; 12 Oct) | [`0xc8bd8a834f42ee8d7b7cce6ba2f774f9dc684a75`](https://explorer.arc.io/address/0xc8bd8a834f42ee8d7b7cce6ba2f774f9dc684a75) | `g2/contracts/ArcG2Registry.sol` |
+| G2: ApexPublicGood (donations forwarded to the faucet in the same transaction; soulbound receipt; 12 Oct) | [`0x42b80834a733e6930d75b80f72bfc6901311cbfd`](https://explorer.arc.io/address/0x42b80834a733e6930d75b80f72bfc6901311cbfd) | `g2/contracts/ApexPublicGood.sol` |
 
 The sources in `contracts/` are the verified files, copied from Sourcify (solc 0.8.28, optimizer 200 runs, EVM paris). Check any of them yourself at `https://sourcify.dev/server/v2/contract/5042/<address>`.
 
