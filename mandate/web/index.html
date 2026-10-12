@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script id="apex-early-theme">(function(){try{var d=document.documentElement,s=localStorage;if(s.getItem("apex-theme-reset")!=="2026-09-26"){s.removeItem("apex-theme-picked");s.setItem("apex-theme-reset","2026-09-26");}var t=(s.getItem("apex-theme-picked")&&(s.getItem("apex-theme")||s.getItem("theme")))||"dark";if(s.getItem("apex-theme-v3")!=="0")d.classList.add("apex-v3");if(s.getItem("apex-game-mode")==="true"){d.classList.add("game-mode");t="dark";}d.setAttribute("data-theme",t);}catch(e){}})();</script>
+<style id="apex-early-ground">html.apex-v3[data-theme="light"]:not(.game-mode),html.apex-v3[data-theme="light"]:not(.game-mode) body{background-color:#F7F2E7!important;color:#5B4411}html.apex-v3:not([data-theme="light"]):not(.game-mode),html.apex-v3:not([data-theme="light"]):not(.game-mode) body{background-color:#0B0A0B!important;color:#E0525A}html.game-mode,html.game-mode body{background-color:#0D47A1!important}</style>
+<link rel="stylesheet" href="/apex-v3.css?v=44" id="apex-v3-css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0b0b">
+<title>Arc Mandate: a spending box for your AI agent</title>
+<meta name="description" content="Put USDC in a box only you control. Your AI agent pays for things by itself, but only inside your rules: a limit per payment, a number of payments a day, the services it may pay, an end date. Stop it or take your money back any time. On Arc, no admin, no fee.">
+<link rel="canonical" href="https://apexfaucet.xyz/arc/mandate/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=neon3">
+<meta property="og:title" content="Arc Mandate: a spending box for your AI agent"><meta property="og:description" content="Your agent pays by itself, only inside your rules. You can stop it or take your money back any time. On Arc, no admin, no fee."><meta property="og:url" content="https://apexfaucet.xyz/arc/mandate/"><meta property="og:type" content="website"><meta property="og:site_name" content="APEX Faucet">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Arc Mandate: a spending box for your AI agent"><meta name="twitter:description" content="Your agent pays by itself, only inside your rules. Stop it or take your money back any time.">
+<style>
+  .ex{max-width:880px;margin:0 auto;padding:84px 16px 80px;color:#3b2d0c;font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+  html:not([data-theme="light"]) .ex{color:#F3E6CF}
+  .ex h1{font-size:clamp(26px,5.4vw,40px);line-height:1.1;margin:0 0 12px;color:inherit}
+  .ex h2{font-size:19px;margin:30px 0 10px;color:inherit}
+  .ex .kick{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:3px;text-transform:uppercase;color:#7A5A00;margin-bottom:10px}
+  html:not([data-theme="light"]) .ex .kick{color:#F1DB93}
+  .ex .soft{font-size:13px;color:#6F5725}
+  html:not([data-theme="light"]) .ex .soft{color:#CDBFA6}
+  .ex a{color:#8A5A00}
+  html:not([data-theme="light"]) .ex a{color:#F1DB93}
+  .lead{font-size:clamp(16px,4vw,18px);margin:0 0 14px}
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:14px 0}
+  .stp,.mcard,.mfacts>div{padding:14px;border:1px solid #D2BD8A;border-radius:16px;background:#FFFCF5}
+  html:not([data-theme="light"]) .stp,html:not([data-theme="light"]) .mcard,html:not([data-theme="light"]) .mfacts>div{background:#17131A;border-color:#4A3A3D}
+  .stp b{display:block;font-size:16px;margin:0 0 4px;color:inherit}
+  .mcard{margin:12px 0}
+  .mst{margin:0 0 8px}
+  .mfacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:0 0 8px}
+  .mfacts b{display:block;font-size:20px;line-height:1.2;color:inherit}
+  .mfacts span{font-size:12px;color:#6F5725}
+  html:not([data-theme="light"]) .mfacts span{color:#CDBFA6}
+  .mout{margin:0 0 8px;padding-left:18px;font-size:14px}
+  .pay{padding:16px;border:2px solid #B8912F;border-radius:18px;margin:16px 0}
+  .ex form label{display:block;margin:10px 0 4px;font-weight:700;font-size:14px;color:inherit}
+  .ex form .hint{display:block;font-weight:400;font-size:12px;color:#6F5725}
+  html:not([data-theme="light"]) .ex form .hint{color:#CDBFA6}
+  .ex input[type=text],.ex input[type=date],.ex input[inputmode],.ex textarea{box-sizing:border-box;width:100%;max-width:560px;padding:10px;border-radius:10px;border:1px solid #B8912F;background:#FFFDF8;color:#3b2d0c;font:15px ui-monospace,Menlo,monospace}
+  html:not([data-theme="light"]) .ex input[type=text],html:not([data-theme="light"]) .ex input[type=date],html:not([data-theme="light"]) .ex input[inputmode],html:not([data-theme="light"]) .ex textarea{background:#0F0C10;color:#F3E6CF;border-color:#6A5520}
+  .row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;max-width:560px}
+  .ex pre{white-space:pre-wrap;word-break:break-word;background:#FFFCF5;border:1px solid #D2BD8A;border-radius:12px;padding:12px;font-size:13px;color:#3b2d0c}
+  html:not([data-theme="light"]) .ex pre{background:#17131A;border-color:#4A3A3D;color:#F3E6C2}
+  html body:not(#a):not(#b):not(#c):not(#d):not(#e):not(#f) .ex button.pb{all:unset;box-sizing:border-box!important;cursor:pointer!important;background:#e7c766!important;color:#15110e!important;-webkit-text-fill-color:#15110e!important;border-radius:10px!important;padding:11px 16px!important;font-weight:700!important;margin:4px 6px 4px 0!important;display:inline-block!important}
+  html body:not(#a):not(#b):not(#c):not(#d):not(#e):not(#f) .ex button.pb.ghost{background:transparent!important;color:inherit!important;-webkit-text-fill-color:currentColor!important;border:1px solid #B8912F!important}
+</style>
+  <meta property="og:image" content="https://apexfaucet.xyz/og/arc-mandate.png">
+  <meta name="twitter:image" content="https://apexfaucet.xyz/og/arc-mandate.png">
+  <meta name="twitter:image:alt" content="Arc Mandate: a spending box for your AI agent">
+</head>
+<body>
+<main class="ex">
+  <div class="kick">Arc · AI agents · your money stays yours</div>
+  <h1>A spending box for your AI agent</h1>
+  <p class="lead">Put USDC in a box that only you control. Your agent pays for things by itself, but only inside your rules: at most so much per payment, so many payments a day, only to the services you pick, until a date you choose. Stop it or take your money back at any time.</p>
+  <p><button type="button" class="pb" id="mgo">Create my box</button> <button type="button" class="pb ghost" id="mmine">Show my boxes</button></p>
+  <p class="soft" id="mme"></p>
+  <p id="mminemsg"></p>
+  <div id="mboxes"></div>
+
+  <div class="steps">
+    <div class="stp"><b>1. You set the rules</b>Which agent, the most per payment, how many payments a day, which services, until when.</div>
+    <div class="stp"><b>2. Your agent pays</b>Every payment is checked by the box on Arc. One that breaks a rule is refused, whatever the agent does.</div>
+    <div class="stp"><b>3. You stay in charge</b>Stop the agent with one tap, change the rules, or take everything back. Nobody else can, not even us.</div>
+  </div>
+
+  <h2 id="create">Create a box</h2>
+  <div class="pay" data-keep-color>
+    <form id="mform" autocomplete="off">
+      <label for="fagent">Agent address<span class="hint">The wallet your agent signs with. It can spend from the box, never take it over.</span></label>
+      <input type="text" id="fagent" name="agent" placeholder="0x…" spellcheck="false">
+      <div class="row2">
+        <div><label for="fper">Most per payment (USDC)</label><input inputmode="decimal" id="fper" name="per" value="0.10"></div>
+        <div><label for="fn">Payments per day</label><input inputmode="numeric" id="fn" name="n" value="20"></div>
+      </div>
+      <label for="fpayees">Who it may pay<span class="hint">One address per line: the services your agent buys from.</span></label>
+      <textarea id="fpayees" name="payees" rows="3" placeholder="0x…" spellcheck="false"></textarea>
+      <label style="font-weight:400"><input type="checkbox" name="any" id="fany"> Any service (the agent may pay any address, still inside the limits)</label>
+      <div class="row2">
+        <div><label for="fend">Ends on (UTC)</label><input type="date" id="fend" name="end"></div>
+        <div><label for="fput">Put in now (USDC)</label><input inputmode="decimal" id="fput" name="put" value="2"></div>
+      </div>
+      <p class="soft" id="msum" style="margin:12px 0 4px"></p>
+      <p><button type="submit" class="pb">Create my box from my wallet</button></p>
+      <p id="mmsg"></p>
+      <p class="soft" style="margin:0">One confirmation in your wallet creates the box and puts the money in. You are its owner: only your wallet can change the rules, stop the agent or take money out. The box has no admin, takes no fee and cannot be upgraded.</p>
+    </form>
+  </div>
+
+  <h2>Open a box by its address</h2>
+  <p><input type="text" id="mopenaddr" placeholder="0x… box address" spellcheck="false"> <button type="button" class="pb ghost" id="mopen">Open</button></p>
+
+  <h2>Why a box and not a wallet</h2>
+  <p>Giving an agent its own wallet means trusting it with everything in it. Limits written in an agent's software or on someone's server hold only as long as that software and that server do. Here the limits are checked by the contract on Arc on every payment, so a buggy agent, a leaked agent key or a bad prompt can never move more than your rules allow: at most the per-payment limit, at most so many times a day, only to your list, and never after the end date.</p>
+
+  <h2>For agents and developers</h2>
+  <p>The agent pays in one of two ways, both checked against the same rules and the same daily count:</p>
+  <p><b>Standard x402.</b> The agent signs a normal EIP-3009 USDC authorization with the box as the payer. Arc's USDC asks the box whether to allow it (EIP-1271), and the box says yes only when the agent signed exactly that payment and it fits the rules. The seller's x402 checkout must check the payer with EIP-1271 and settle with the bytes-signature version of the transfer; ours does. A checkout that only checks plain wallet signatures turns a box payment away.</p>
+  <p><b>Direct.</b> The agent calls <code>pay(to, amount, slot, ref)</code> and the box sends the USDC. Any seller that accepts a plain Arc USDC transfer can take it.</p>
+<pre>import { x402Fetch } from './sdk/mandate.mjs';
+// pays a 402 on Arc from the box, inside the owner's rules
+const res = await x402Fetch('https://apexfaucet.xyz/api/x402/arc-gold',
+  { pub, account: agentKey, box: '0xYourBox', maxUsd: 0.01 });</pre>
+  <h2>Proof: our own agent uses one</h2>
+  <p>Our demo agent spends from <a href="https://explorer.arc.io/address/0xe879dcb80336363ff3b24f6504ffcbaca6bf50e8" target="_blank" rel="noopener">our own box</a> (our money, at most 0.01 USDC per payment, 20 payments a day, only to our shop). On 7 October 2026 it bought gold data twice and was refused once, all on Arc mainnet:</p>
+  <ul class="mout">
+    <li>standard x402, signed by the agent, approved by the box: <a href="https://explorer.arc.io/tx/0x3eecb7ff6d3a026c73c02405395e3a11ef2f3bc8ebfed90375cdbdac8dd17df7" target="_blank" rel="noopener">0.003 USDC paid</a></li>
+    <li>direct payment through the box: <a href="https://explorer.arc.io/tx/0xff60c87d8dd8a688fe25996418c3a735bbdb640350d5aa2f964734e0c0fda627" target="_blank" rel="noopener">0.003 USDC paid</a></li>
+    <li>0.010001 USDC, one millionth over its limit: <a href="https://explorer.arc.io/tx/0x2a2e7114306e5c4dcd4cc930a305478d65d2eb9e09460055de14cad404161bd2" target="_blank" rel="noopener">refused by the box</a> (Refused: over the per-payment limit)</li>
+  </ul>
+  <p class="soft" id="maddrs">Contracts on Arc mainnet: factory <a href="https://explorer.arc.io/address/0x69e444f722666e13e171181efe054a93e0976b26" target="_blank" rel="noopener">0x69e444f7…6b26</a>, box code <a href="https://explorer.arc.io/address/0xb380369c90918baaebadd48b26e2d12def74ef9b" target="_blank" rel="noopener">0xb380369c…ef9b</a>. No admin, no fee, no upgrade. Source verified on the Arc explorer. Code, tests and agent SDK: <a href="https://github.com/apexfaucet-hub/arc-mandate" target="_blank" rel="noopener">github.com/apexfaucet-hub/arc-mandate</a>. Reviewed by its own tests (36, plus 18 planted faults) and an independent AI review; not audited by a security firm, so put in what you would give the agent anyway.</p>
+  <p class="soft">Each payment uses one of today's numbered slots, and a slot is a USDC authorization nonce. Arc's USDC records the slots spent by x402, the box records the ones spent by a direct payment, and each path checks both, so no slot is used twice. Days are UTC days: an authorization signed for today is refused after midnight UTC. A box holds USDC; any other token sent to it can be taken out by the owner.</p>
+</main>
+<script>window.MANDATE={factory:"0x69e444f722666e13e171181efe054a93e0976b26",deployBlock:24802686};</script>
+<script src="/arc/mandate/mandate.js?v=2" defer></script>
+<script src="/nav-v2.js?v=r243"></script>
+</body>
+</html>

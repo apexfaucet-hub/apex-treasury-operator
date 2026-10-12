@@ -1,0 +1,15 @@
+{
+  "name": "arc-mandate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A spending box with rules for AI agents on Arc: owner-held USDC, per-payment cap, daily payment slots, payee list, expiry, stop button. Works with plain transfers and standard x402 (EIP-3009 + EIP-1271).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "forge test",
+    "test:arc": "forge build && node test/arc/run.mjs"
+  },
+  "dependencies": {
+    "viem": "2.21.55"
+  }
+}

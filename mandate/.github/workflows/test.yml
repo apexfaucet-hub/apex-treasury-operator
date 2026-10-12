@@ -1,0 +1,18 @@
+name: tests
+on:
+  push:
+  pull_request:
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - name: Build
+        run: forge build
+      - name: Unit and fuzz tests (36, incl. 2,000 random runs)
+        run: forge test -vv
+      - name: Planted faults (each one must make a test fail)
+        run: python3 test/mutate.py

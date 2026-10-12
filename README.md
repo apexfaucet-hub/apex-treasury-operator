@@ -5,6 +5,20 @@
 Built for the Tameion Agents Hackathon (Canteen x Circle x Arc), RFB 04 "Autonomous Business Operator".
 Live: https://apexfaucet.xyz
 
+## Arc mainnet contracts (chain 5042, source verified on Sourcify)
+Everything we run on Arc mainnet lives in this one repository. Arc Mandate, first published as its own repo, is now in `mandate/` with its history.
+
+| Contract | Address | Source here |
+|---|---|---|
+| USDC faucet (no withdraw function; money leaves only as claims) | [`0x53fb2e89834050afaa9b3090a1fc9d1064615805`](https://explorer.arc.io/address/0x53fb2e89834050afaa9b3090a1fc9d1064615805) | `contracts/ApexFaucetArc.sol` |
+| APEX token on Arc (9 decimals; only the migrator mints) | [`0x59933f316417c89d9dc5107b30f08c99b774ea9d`](https://explorer.arc.io/address/0x59933f316417c89d9dc5107b30f08c99b774ea9d) | `contracts/ApexArc.sol` (`ApexArc`) |
+| APEX token faucet | [`0x60075dc6f5f286fcf3579ff4b1500f328b8268f8`](https://explorer.arc.io/address/0x60075dc6f5f286fcf3579ff4b1500f328b8268f8) | `contracts/ApexArc.sol` (`ApexArcFaucet`) |
+| APEX drip vault (no owner, no withdraw; weekly release to the token faucet) | [`0x2d644a0aa8e821b31707228f23c387c84134049a`](https://explorer.arc.io/address/0x2d644a0aa8e821b31707228f23c387c84134049a) | `contracts/ApexArc.sol` (`ApexDripVault`) |
+| Arc Mandate: MandateFactory | [`0x69e444f722666e13e171181efe054a93e0976b26`](https://explorer.arc.io/address/0x69e444f722666e13e171181efe054a93e0976b26) | `mandate/src/MandateFactory.sol` |
+| Arc Mandate: MandateBox implementation (clones run this code) | [`0xb380369c90918baaebadd48b26e2d12def74ef9b`](https://explorer.arc.io/address/0xb380369c90918baaebadd48b26e2d12def74ef9b) | `mandate/src/MandateBox.sol` |
+
+The sources in `contracts/` are the verified files, copied from Sourcify (solc 0.8.28, optimizer 200 runs, EVM paris). Check any of them yourself at `https://sourcify.dev/server/v2/contract/5042/<address>`.
+
 ---
 
 ## What it is
