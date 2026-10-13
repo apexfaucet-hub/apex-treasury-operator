@@ -5,6 +5,13 @@
 Built for the Tameion Agents Hackathon (Canteen x Circle x Arc), RFB 04 "Autonomous Business Operator".
 Live: https://apexfaucet.xyz
 
+## For judges: start here (13 Oct 2026)
+- **Film, 2:43, silent with captions** (every number on screen is checked against its source by the build): https://apexfaucet.xyz/hackathon/apex-treasury-operator-2026-10-13.mp4
+- **Real mainnet users:** the Arc faucet paid 323 claims to 219 different addresses (7.73 USDC, the contract's own totals). Since 11 Oct it is the Arc mainnet faucet listed on chainid.network / chainlist.
+- **Agent to agent, on chain:** G2 (12 Oct). Agents post questions with a USDC bounty to an ERC-8004 passport. Our passport #1 answers by itself and posts an hourly launch-and-pull warning. Page: https://apexfaucet.xyz/arc/g2/
+- **Limits an agent cannot cross:** Arc Mandate (on-chain spending box, `mandate/`), a send gate with 28 enforced senders, a recorder in every sender, and books reconciled every 2 hours (0 open alerts on 13 Oct).
+- **Honest gap:** outside revenue is small: $2.84 from 16 outside wallets since 19 Sep. Paid agent data is a small market everywhere today (Coinbase's Bazaar, 30 days to 9 Oct: only 420 of 34,062 listed endpoints had 10 or more paying wallets).
+
 ## Arc mainnet contracts (chain 5042, source verified on Sourcify)
 Everything we run on Arc mainnet lives in this one repository. Arc Mandate, first published as its own repo, is now in `mandate/` with its history. G2 on Arc (built with Arc Studio, Circle's builder agent) is in `g2/`, with its own README.
 
@@ -25,7 +32,7 @@ The sources in `contracts/` are the verified files, copied from Sourcify (solc 0
 
 ## What it is
 APEX Faucet is a live business on Arc and X1: a free USDC faucet for people, and paid on-chain data for AI agents. It has one human founder. **An AI agent (Claude) operates it day to day.** It:
-- **Earns:** sells data per call over x402 (90 paid products on 8 Oct; USDC on Arc and Base, Circle Gateway nanopayments, Solana, BNB, X1), with an MCP server of 153 tools, plus a $5 card pass for agents without a wallet.
+- **Earns:** sells data per call over x402 (USDC on Arc and Base, Circle Gateway nanopayments, Solana, BNB, X1), with an MCP server of 174 tools (13 Oct), plus a $5 card pass for agents without a wallet.
 - **Holds and moves funds:**
   - its Arc trader pays half of every winning close into the faucet (in batches, since 24 Sep);
   - it bridges with CCTP and prices its own products;
@@ -35,10 +42,10 @@ APEX Faucet is a live business on Arc and X1: a free USDC faucet for people, and
 - **Keeps books it cannot fake:**
   - A sandboxed accounting layer (no keys, allowlisted network only) reconciles every registered wallet every two hours and records an alert on any outflow nobody recorded. Its exit tests, planted faults and September backtests, all pass on 8 Oct.
   - A shared payment recorder writes down what each sender sent, from the transaction it signed; 17 sending code paths use it, and a nightly check fails any new sender that does not.
-  - A central send gate (`/etc/apex/send-gate.json`, root-owned) puts per-payment and per-day caps on every value send on Arc and Base, and a fixed list of destinations on most of them: 16 senders, all enforced.
+  - A central send gate (`/etc/apex/send-gate.json`, root-owned) puts per-payment and per-day caps on every value send on Arc and Base, and a fixed list of destinations on most of them: 28 senders on 13 Oct, all enforced.
   - A second model reviews new contracts and changes with real money at stake before they go live.
 
-**New, 7 Oct: [Arc Mandate](https://github.com/apexfaucet-hub/arc-mandate)**, the same idea made on chain for anyone: a spending box with rules for AI agents. The owner puts USDC in and sets the agent, the most per payment, payments per UTC day, payees and an end date; the contract checks every payment, by standard x402 (EIP-3009 with the box as payer, approved through EIP-1271) or directly. No admin, no fee. Live at [apexfaucet.xyz/arc/mandate/](https://apexfaucet.xyz/arc/mandate/), source-verified on the Arc explorer, with an x402 payment, a direct payment and an over-limit refusal on mainnet.
+**New, 7 Oct: Arc Mandate (now in [`mandate/`](mandate/))**, the same idea made on chain for anyone: a spending box with rules for AI agents. The owner puts USDC in and sets the agent, the most per payment, payments per UTC day, payees and an end date; the contract checks every payment, by standard x402 (EIP-3009 with the box as payer, approved through EIP-1271) or directly. No admin, no fee. Live at [apexfaucet.xyz/arc/mandate/](https://apexfaucet.xyz/arc/mandate/), source-verified on the Arc explorer, with an x402 payment, a direct payment and an over-limit refusal on mainnet.
 
 The limits are in [`limits/LIMITS.md`](limits/LIMITS.md). The code that enforces them is below.
 
