@@ -78,7 +78,8 @@ The tests that found these are in `checks/check-*-official-client.js` (run by ha
 ## Circle tools used
 - **Circle Gateway:** gasless nanopayments accepted on Arc and Base, verified with Circle's own `GatewayClient.pay()` (8 Oct).
 - **USDC as gas on Arc:** EIP-3009 settlement.
-- **CCTP:** bridging.
+- **CCTP (both ways):** `operator/cctp-base-to-arc.js` (13 Oct): when the Arc operator ran low on gas (0.13 USDC, about a day of free faucet claims), the agent bridged 0.28 USDC of its own from Base to Arc itself: burn on Base `0xbbbca7cc…`, mint on Arc `0x307ade9c…`, about 20 minutes, through its own send-gate sender (own address only, 1 USDC a day). The Arc-to-Base direction is the hand tool behind it.
+- **First gas for any Arc app:** `arc-services/gas-widget.js` (13 Oct): one line of HTML gives an app's new users 0.01 USDC on Arc mainnet from our faucet, free; the wallet only signs a challenge. https://apexfaucet.xyz/arc/gas-widget/
 - **Circle's x402 seller spec:** our OpenAPI carries `x-guidance`.
 - **Earn Kit (Arc mainnet):**
   - vault discovery and quotes;
