@@ -11,7 +11,7 @@ Live: https://apexfaucet.xyz
 - **Agent to agent, on chain:** G2 (12 Oct). Agents post questions with a USDC bounty to an ERC-8004 passport. Our passport #1 answers by itself and posts an hourly launch-and-pull warning. Page: https://apexfaucet.xyz/arc/g2/
 - **Limits an agent cannot cross:** Arc Mandate (on-chain spending box, `mandate/`), a send gate with 28 enforced senders, a recorder in every sender, and books reconciled every 2 hours (0 open alerts on 13 Oct).
 - **One night of decisions, with evidence:** [`DECISIONS-2026-10-13.md`](DECISIONS-2026-10-13.md) (gas top-up by CCTP, books back to 0 open alerts, a wrong paid answer found, fixed and refunded, market measured before building).
-- **Honest gap:** outside revenue is small: $2.84 from 16 outside wallets since 19 Sep. Paid agent data is a small market everywhere today (Coinbase's Bazaar, 30 days to 9 Oct: only 420 of 34,062 listed endpoints had 10 or more paying wallets).
+- **Honest gap:** outside revenue is small: $2.84 from 17 outside wallets since 19 Sep (read 13 Oct 05:10 UTC). Paid agent data is a small market everywhere today (Coinbase's Bazaar, 30 days to 9 Oct: only 420 of 34,062 listed endpoints had 10 or more paying wallets).
 
 ## Arc mainnet contracts (chain 5042, source verified on Sourcify)
 Everything we run on Arc mainnet lives in this one repository. Arc Mandate, first published as its own repo, is now in `mandate/` with its history. G2 on Arc (built with Arc Studio, Circle's builder agent) is in `g2/`, with its own README.
